@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أور الملكية - النسخة الشاملة (أصوات مستمرة)</title>
+    <title>أور الملكية - النسخة الشاملة (حل نهائي للأصوات)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
@@ -44,7 +44,13 @@
         .settings-box h2 { color: #d4af37; border-bottom: 1px solid #d4af37; padding-bottom: 10px; margin-top: 0;}
         .slider-container { margin: 20px 0; text-align: right;}
         .slider-container label { display: block; margin-bottom: 10px; font-weight: bold; color: #d4af37;}
-        input[type=range] { width: 100%; accent-color: #d4af37; cursor: pointer;}
+        
+        /* حل مشكلة شريط الصوت في الموبايل */
+        input[type=range] { 
+            width: 100%; accent-color: #d4af37; cursor: pointer;
+            touch-action: manipulation !important; /* يسمح بالسحب في الموبايل */
+            pointer-events: auto;
+        }
         
         .settings-btn { display: block; width: 100%; padding: 12px; margin: 10px 0; background: #d4af37; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; font-size: 16px;}
         .settings-btn.danger { background: #aa0000; color: white; }
@@ -117,8 +123,8 @@
 <body>
 
 <audio id="bg-music" loop></audio>
-<audio id="sfx-dice"></audio>
-<audio id="sfx-move"></audio>
+<audio id="sfx-dice" preload="auto"></audio>
+<audio id="sfx-move" preload="auto"></audio>
 
 <div id="ui-layer">
     <div id="top-ui">
@@ -205,7 +211,6 @@ const COLORS = {
 
 document.getElementById('launcher').style.backgroundImage = `url('${DESIGN_ASSETS.mainMenuBackground}')`;
 
-// تعيين الروابط للأصوات
 const bgMusicEl = document.getElementById('bg-music');
 const sfxDiceEl = document.getElementById('sfx-dice');
 const sfxMoveEl = document.getElementById('sfx-move');
@@ -240,6 +245,19 @@ const PATHS = {
     p1: [[2,3],[2,2],[2,1],[2,0],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[2,7],[2,6]],
     p2: [[0,3],[0,2],[0,1],[0,0],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[0,7],[0,6]]
 };
+
+// 🔊 دالة استنساخ الصوت (لضمان التشغيل المستمر دون تقطيع)
+function playSFX(id) {
+    const audioEl = document.getElementById(id);
+    if (audioEl) {
+        const clone = audioEl.cloneNode(); // إنشاء نسخة جديدة للصوت في كل مرة
+        clone.volume = 1.0; // أعلى صوت دائماً للمؤثرات
+        let playPromise = clone.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => { /* تجاهل الأخطاء الصامتة */ });
+        }
+    }
+}
 
 class Game3D {
     constructor(mode, isCinematic = false) {
@@ -460,17 +478,6 @@ class Game3D {
         if(log.children.length > 3) log.removeChild(log.firstChild);
     }
 
-    playSound(id) {
-        const audio = document.getElementById(id);
-        if (audio) {
-            audio.currentTime = 0; 
-            let playPromise = audio.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(error => { /* منع الأخطاء الوهمية للمتصفح */ });
-            }
-        }
-    }
-
     async rollDice() {
         if(this.isLocked || this.isCinematic) return;
         this.isLocked = true;
@@ -479,8 +486,8 @@ class Game3D {
         
         document.getElementById('roll-btn-container').classList.add('disabled');
         
-        // تشغيل صوت النرد لك وللكمبيوتر باستمرار
-        this.playSound('sfx-dice');
+        // استنساخ وتشغيل صوت النرد
+        playSFX('sfx-dice');
 
         let val = 0;
         const anims = [];
@@ -637,8 +644,8 @@ class Game3D {
         this.guideMesh.visible = false; 
         this.clearHighlights(); 
         
-        // تشغيل صوت حركة الحجر في نفس لحظة القفز الأولى
-        this.playSound('sfx-move');
+        // تشغيل صوت حركة الحجر فوراً لك وللكمبيوتر باستنساخ الصوت
+        playSFX('sfx-move');
         
         const my = player === 1 ? this.p1Pos : this.p2Pos;
         const opp = player === 1 ? this.p2Pos : this.p1Pos;
@@ -736,6 +743,12 @@ function startCinematicIntro(mode) {
     document.getElementById('launcher').style.display = 'none';
     document.getElementById('intro-overlay').style.display = 'flex';
     game = new Game3D(mode, true);
+    
+    // خداع المتصفح لفتح جميع الأصوات بصمت فور اللمسة الأولى
+    let sfxD = document.getElementById('sfx-dice');
+    let sfxM = document.getElementById('sfx-move');
+    sfxD.volume = 0; sfxD.play().then(()=>sfxD.pause()).catch(e=>{});
+    sfxM.volume = 0; sfxM.play().then(()=>sfxM.pause()).catch(e=>{});
 }
 
 function showZoomHint() {
@@ -750,20 +763,15 @@ function showZoomHint() {
 function endCinematicIntro() {
     document.getElementById('intro-overlay').style.display = 'none';
     
-    // فتح قفل المتصفح لجميع الأصوات بمجرد التفاعل
-    const sfxDice = document.getElementById('sfx-dice');
-    const sfxMove = document.getElementById('sfx-move');
-    const bgMusic = document.getElementById('bg-music');
-    
-    // خدعة تقنية: تشغيل وكتم فوري للمؤثرات للسماح لها بالعمل لاحقاً بدون تفاعل (للبوت)
-    sfxDice.muted = true; sfxDice.play().then(() => { sfxDice.pause(); sfxDice.muted = false; }).catch(e=>{});
-    sfxMove.muted = true; sfxMove.play().then(() => { sfxMove.pause(); sfxMove.muted = false; }).catch(e=>{});
-    
+    const audio = document.getElementById('bg-music');
     if(!isMusicMuted) {
-        bgMusic.volume = parseFloat(document.getElementById('volume-slider').value); 
-        bgMusic.play().catch(e => {
-            window.addEventListener('pointerdown', () => bgMusic.play(), { once: true });
-        });
+        audio.volume = parseFloat(document.getElementById('volume-slider').value); 
+        let playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                window.addEventListener('pointerdown', () => audio.play(), { once: true });
+            });
+        }
     }
 
     game.isCinematic = false;
@@ -793,12 +801,10 @@ function endCinematicIntro() {
 function openSettings() { document.getElementById('settings-menu').style.display = 'flex'; }
 function closeSettings() { document.getElementById('settings-menu').style.display = 'none'; }
 
-// هذا الشريط الآن يتحكم بصوت الموسيقى فقط بشكل فوري!
 function updateMusicVolume(val) {
     document.getElementById('bg-music').volume = parseFloat(val);
 }
 
-// دالة كتم/تشغيل موسيقى الخلفية
 function toggleMusic() {
     const bgMusic = document.getElementById('bg-music');
     const muteBtn = document.getElementById('mute-btn');
