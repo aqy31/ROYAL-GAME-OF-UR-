@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أور الملكية - النسخة الشاملة (أصوات سريعة بدون تأخير)</title>
+    <title>أور الملكية - النسخة الشاملة (تحديث الكاميرا والخامات)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
@@ -44,12 +44,7 @@
         .settings-box h2 { color: #d4af37; border-bottom: 1px solid #d4af37; padding-bottom: 10px; margin-top: 0;}
         .slider-container { margin: 20px 0; text-align: right;}
         .slider-container label { display: block; margin-bottom: 10px; font-weight: bold; color: #d4af37;}
-        
-        input[type=range] { 
-            width: 100%; accent-color: #d4af37; cursor: pointer;
-            touch-action: manipulation !important; 
-            pointer-events: auto;
-        }
+        input[type=range] { width: 100%; accent-color: #d4af37; cursor: pointer; touch-action: manipulation !important; pointer-events: auto;}
         
         .settings-btn { display: block; width: 100%; padding: 12px; margin: 10px 0; background: #d4af37; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; font-size: 16px;}
         .settings-btn.danger { background: #aa0000; color: white; }
@@ -83,12 +78,14 @@
         .menu-box { background: rgba(10, 5, 0, 0.9); padding: 30px; border: 2px solid #d4af37; border-radius: 15px; text-align: center; max-width: 90%; box-shadow: 0 0 40px rgba(0,0,0,0.9);}
         .btn { display: block; width: 100%; max-width: 250px; padding: 15px; margin: 10px auto; background: #d4af37; color: #000; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; border-radius: 8px;}
         
+        /* 🚨 تم تعديل شاشة التعليمات لتكون شفافة تماماً مع فلتر زجاجي لتظهر حركة الكاميرا بالخلف 🚨 */
         #intro-overlay {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.1); backdrop-filter: blur(3px);
             display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 80;
         }
         .intro-box {
             background: rgba(20, 15, 10, 0.95); padding: 25px; border: 2px solid #d4af37; border-radius: 10px; text-align: center; color: white; width: 90%; max-width: 500px;
+            box-shadow: 0 0 30px #000;
         }
         .intro-box h2 { color: #d4af37; border-bottom: 1px solid #d4af37; padding-bottom: 10px; font-size: 22px;}
         .intro-box p { font-size: 16px; line-height: 1.6; margin: 10px 0;}
@@ -107,14 +104,11 @@
             .score-num { font-size: 1.4rem; margin-top: 2px;}
             #status-bar { font-size: 1.2rem; padding: 5px 10px;}
             #settings-btn { width: 40px; height: 40px; font-size: 20px;}
-            
             #bottom-bar { bottom: 15px; left: 10px; right: 10px; gap: 10px; }
             #roll-btn-container { width: 90px; height: 75px; }
             .dice-icon { width: 28px; height: 28px; }
             .roll-text { font-size: 13px; }
-            
             #chat-log { width: calc(100% - 100px); height: 75px; font-size: 11px; padding: 5px 8px; }
-            
             #zoom-hint { width: 80%; padding: 15px 10px; font-size: 1.1rem; }
         }
     </style>
@@ -181,60 +175,61 @@
 
 <script>
 // ==========================================
-// 🎨 لوحة تحكم المصمم 🎨
+// 🎨 لوحة تحكم المصمم (الصور والألوان) 🎨
 // ==========================================
 const DESIGN_ASSETS = {
+    // 1. القائمة وجدران الغرفة
     mainMenuBackground: 'https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?q=80&w=2000',
-    tableTexture: 'https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?q=80&w=1000',
-    boardNormalCell: 'https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?q=80&w=500',
-    boardRosetteCell: 'https://images.unsplash.com/photo-1588629517178-5db77ba13340?q=80&w=500',
-    boardSideEdge: 'https://images.unsplash.com/photo-1601058268499-e52658b8ebf8?q=80&w=500',
-    pieceTexture: 'https://images.unsplash.com/photo-1521106047354-5a5b85e819ee?q=80&w=500',
-    diceTexture: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Ancient_Mesopotamian_dice.jpg',
-    trayTexture: 'https://images.unsplash.com/photo-1522066841261-2679905c1e19?q=80&w=500',
-    clayTablet: 'https://images.unsplash.com/photo-1616743845946-b33c0617baea?q=80&w=500', 
-    pottery: 'https://images.unsplash.com/photo-1610705462521-1dc53460df76?q=80&w=500',
     roomWallTexture: 'https://images.unsplash.com/photo-1518972559570-7cc1309f3229?q=80&w=1000',
     
+    // 2. الطاولة والصحن
+    mainTable: 'https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?q=80&w=1000',
+    trayTexture: 'https://images.unsplash.com/photo-1522066841261-2679905c1e19?q=80&w=500',
+
+    // 3. أسطح اللوحة الخشبية (من الأعلى)
+    boardTopNormal: 'https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?q=80&w=500',
+    boardTopRosette: 'https://images.unsplash.com/photo-1588629517178-5db77ba13340?q=80&w=500',
+    
+    // 4. جوانب اللوحة الخشبية
+    boardSideLeftRight: 'https://images.unsplash.com/photo-1601058268499-e52658b8ebf8?q=80&w=500', // يمين ويسار
+    boardSideTopBottom: 'https://images.unsplash.com/photo-1601058268499-e52658b8ebf8?q=80&w=500', // عليا وسفلى (أمام وخلف)
+
+    // 5. الأحجار
+    pieceBlue: 'https://images.unsplash.com/photo-1521106047354-5a5b85e819ee?q=80&w=500', 
+    pieceRed: 'https://images.unsplash.com/photo-1521106047354-5a5b85e819ee?q=80&w=500',  
+
+    // 6. النرد والرقم الطينية
+    diceTex: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Ancient_Mesopotamian_dice.jpg',
+    clayTabletTex: 'https://images.unsplash.com/photo-1616743845946-b33c0617baea?q=80&w=500', 
+    
+    // 7. الأصوات
     bgMusic: 'music.mp3',
     diceSound: 'dice.mp3', 
     moveSound: 'move.mp3'  
-};
-
-const COLORS = {
-    player1: 0x0a1526, player2: 0xaa0000, dice: 0x008080, boardBase: 0x880000 
 };
 // ==========================================
 
 document.getElementById('launcher').style.backgroundImage = `url('${DESIGN_ASSETS.mainMenuBackground}')`;
 document.getElementById('bg-music').src = DESIGN_ASSETS.bgMusic;
 
-// 🔊 --- نظام الصوت الاحترافي (Web Audio API) لإنهاء التأخير (Zero Latency) --- 🔊
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 const audioBuffers = {};
 
-// وظيفة لتحميل الصوت مسبقاً وتخزينه في الـ RAM
 async function loadSFX(id, url) {
     try {
         const response = await fetch(url);
         const arrayBuffer = await response.arrayBuffer();
         const decodedData = await audioCtx.decodeAudioData(arrayBuffer);
         audioBuffers[id] = decodedData;
-    } catch (err) {
-        console.log("Error loading audio:", err);
-    }
+    } catch (err) {}
 }
 
-// نبدأ تحميل الأصوات فوراً أول ما يفتح الموقع
 loadSFX('dice', DESIGN_ASSETS.diceSound);
 loadSFX('move', DESIGN_ASSETS.moveSound);
 
-// وظيفة تشغيل الصوت الفوري (تشتغل حتى لو كان دور البوت)
 function playSFX(id) {
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     if (audioBuffers[id]) {
         const source = audioCtx.createBufferSource();
         source.buffer = audioBuffers[id];
@@ -242,19 +237,19 @@ function playSFX(id) {
         source.start(0);
     }
 }
-// ----------------------------------------------------------------------------------
 
 const textureLoader = new THREE.TextureLoader();
 const textures = {
-    table: textureLoader.load(DESIGN_ASSETS.tableTexture),
-    boardNorm: textureLoader.load(DESIGN_ASSETS.boardNormalCell),
-    boardRosette: textureLoader.load(DESIGN_ASSETS.boardRosetteCell),
-    boardEdge: textureLoader.load(DESIGN_ASSETS.boardSideEdge),
-    piece: textureLoader.load(DESIGN_ASSETS.pieceTexture),
-    dice: textureLoader.load(DESIGN_ASSETS.diceTexture),
+    table: textureLoader.load(DESIGN_ASSETS.mainTable),
+    boardNorm: textureLoader.load(DESIGN_ASSETS.boardTopNormal),
+    boardRosette: textureLoader.load(DESIGN_ASSETS.boardTopRosette),
+    sideLR: textureLoader.load(DESIGN_ASSETS.boardSideLeftRight),
+    sideTB: textureLoader.load(DESIGN_ASSETS.boardSideTopBottom),
+    pieceBlue: textureLoader.load(DESIGN_ASSETS.pieceBlue),
+    pieceRed: textureLoader.load(DESIGN_ASSETS.pieceRed),
+    dice: textureLoader.load(DESIGN_ASSETS.diceTex),
     tray: textureLoader.load(DESIGN_ASSETS.trayTexture),
-    clay: textureLoader.load(DESIGN_ASSETS.clayTablet),
-    pot: textureLoader.load(DESIGN_ASSETS.pottery),
+    clay: textureLoader.load(DESIGN_ASSETS.clayTabletTex),
     roomWall: textureLoader.load(DESIGN_ASSETS.roomWallTexture)
 };
 
@@ -322,10 +317,11 @@ class Game3D {
         this.controls.minDistance = 10;
         this.controls.maxDistance = 60; 
 
+        // تفعيل دوران الكاميرا بالخلفية عند فتح شاشة التعليمات
         if(this.isCinematic) {
             this.camera.position.set(30, 20, 30);
             this.controls.autoRotate = true;
-            this.controls.autoRotateSpeed = 1.5;
+            this.controls.autoRotateSpeed = 2.0; // تسريع الدوران قليلاً ليكون أوضح
         } else {
             this.camera.position.set(this.defaultCamPos.x, this.defaultCamPos.y, this.defaultCamPos.z); 
         }
@@ -356,20 +352,19 @@ class Game3D {
     createEnvironment() {
         textures.table.wrapS = THREE.RepeatWrapping; textures.table.wrapT = THREE.RepeatWrapping;
         textures.table.repeat.set(8, 8); 
-        const tableGeo = new THREE.BoxGeometry(70, 1, 50);
-        const tableMat = new THREE.MeshStandardMaterial({ map: textures.table, color: 0x5a3a22, roughness: 1 });
-        const table = new THREE.Mesh(tableGeo, tableMat);
+        // مسح الـ color: 0x5a3a22 (اللون التظليلي) ليظهر خشب الطاولة بصورته الحقيقية!
+        const tableMat = new THREE.MeshStandardMaterial({ map: textures.table, color: 0xffffff, roughness: 1 });
+        const table = new THREE.Mesh(new THREE.BoxGeometry(70, 1, 50), tableMat);
         table.position.set(0, -0.5, 0);
         table.receiveShadow = true;
         this.scene.add(table);
 
         textures.roomWall.wrapS = THREE.RepeatWrapping; textures.roomWall.wrapT = THREE.RepeatWrapping;
         textures.roomWall.repeat.set(4, 4); 
-        const roomGeo = new THREE.BoxGeometry(150, 80, 150);
         const roomMat = new THREE.MeshStandardMaterial({ 
-            map: textures.roomWall, color: 0x8b5a2b, roughness: 1, side: THREE.BackSide 
+            map: textures.roomWall, color: 0xffffff, roughness: 1, side: THREE.BackSide 
         });
-        const room = new THREE.Mesh(roomGeo, roomMat);
+        const room = new THREE.Mesh(new THREE.BoxGeometry(150, 80, 150), roomMat);
         room.position.y = 10;
         this.scene.add(room);
     }
@@ -381,9 +376,12 @@ class Game3D {
                 if((r==0||r==2) && (c==4||c==5)) continue;
                 const isRosette = (r===0&&c===0)||(r===0&&c===6)||(r===1&&c===3)||(r===2&&c===0)||(r===2&&c===6);
                 
-                const topMat = new THREE.MeshStandardMaterial({ map: isRosette ? textures.boardRosette : textures.boardNorm, color: isRosette ? 0xffeebb : 0xeeddcc, roughness: 0.8 });
-                const sideMat = new THREE.MeshStandardMaterial({ map: textures.boardEdge, color: COLORS.boardBase, roughness: 0.9 });
-                const materials = [sideMat, sideMat, topMat, sideMat, sideMat, sideMat];
+                // 🚨 مسح الألوان المدمجة (color: 0xffffff) لتظهر صور الخشبة التي اخترتها كما هي 🚨
+                const topMat = new THREE.MeshStandardMaterial({ map: isRosette ? textures.boardRosette : textures.boardNorm, color: 0xffffff, roughness: 0.8 });
+                const matLR = new THREE.MeshStandardMaterial({ map: textures.sideLR, color: 0xffffff, roughness: 0.9 });
+                const matTB = new THREE.MeshStandardMaterial({ map: textures.sideTB, color: 0xffffff, roughness: 0.9 });
+                
+                const materials = [matLR, matLR, topMat, matTB, matTB, matTB];
 
                 const geo = new THREE.BoxGeometry(CONFIG.cell, 1.2, CONFIG.cell); 
                 const tile = new THREE.Mesh(geo, materials);
@@ -406,7 +404,9 @@ class Game3D {
                 const geo = new THREE.SphereGeometry(0.85, 32, 16);
                 geo.applyMatrix4(new THREE.Matrix4().makeScale(1, 0.35, 1)); 
 
-                const mat = new THREE.MeshStandardMaterial({ color: player === 1 ? COLORS.player1 : COLORS.player2, map: textures.piece, metalness: 0.2, roughness: 0.5 });
+                const pTex = player === 1 ? textures.pieceBlue : textures.pieceRed;
+                // مسح التظليل اللوني عن الأحجار لتظهر الصور الأصلية
+                const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: pTex, metalness: 0.2, roughness: 0.5 });
                 const piece = new THREE.Mesh(geo, mat);
                 piece.castShadow = true; piece.receiveShadow = true;
                 piece.userData = { type: 'piece', player, id: i, anim: null, baseY: 0 };
@@ -432,7 +432,7 @@ class Game3D {
 
     createDiceAndTray() {
         const trayGeo = new THREE.CylinderGeometry(3.5, 3, 0.5, 32);
-        const trayMat = new THREE.MeshStandardMaterial({ map: textures.tray, color: 0xb8860b, metalness: 0.7, roughness: 0.6 });
+        const trayMat = new THREE.MeshStandardMaterial({ map: textures.tray, color: 0xffffff, metalness: 0.7, roughness: 0.6 });
         const tray = new THREE.Mesh(trayGeo, trayMat);
         tray.position.set(-14.5, 0.25, 0); 
         tray.receiveShadow = true; tray.castShadow = true;
@@ -446,9 +446,9 @@ class Game3D {
 
         const geo = new THREE.TetrahedronGeometry(0.65);
         for(let i=0; i<4; i++) {
-            const mat = new THREE.MeshStandardMaterial({ map: textures.dice, color: COLORS.dice, roughness: 0.6, metalness: 0.2 });
+            const mat = new THREE.MeshStandardMaterial({ map: textures.dice, color: 0xffffff, roughness: 0.6, metalness: 0.2 });
             const die = new THREE.Mesh(geo, mat);
-            die.position.set(-14.5 + (Math.random()*2 - 1), 0.6, (Math.random()*2 - 1));
+            die.position.set(-14.5 + (Math.random()*1.5 - 0.75), 1.15, (Math.random()*1.5 - 0.75));
             die.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, 0);
             die.castShadow = true;
             this.scene.add(die);
@@ -457,20 +457,35 @@ class Game3D {
     }
 
     createDecorations() {
-        const tabletMat = new THREE.MeshStandardMaterial({ map: textures.clay, color: 0xaa8866, roughness: 0.9 });
-        const tablet1 = new THREE.Mesh(new THREE.BoxGeometry(4, 0.3, 5), tabletMat);
-        tablet1.position.set(13, 0.15, -4); tablet1.rotation.y = -Math.PI / 6; tablet1.castShadow = true;
+        const tabletMat = new THREE.MeshStandardMaterial({ map: textures.clay, color: 0xffffff, roughness: 0.9 });
+        
+        const shape = new THREE.Shape();
+        const w = 1.8, l = 2.5, r = 0.4;
+        shape.moveTo(-w + r, -l);
+        shape.lineTo(w - r, -l);
+        shape.quadraticCurveTo(w, -l, w, -l + r);
+        shape.lineTo(w, l - r);
+        shape.quadraticCurveTo(w, l, w - r, l);
+        shape.lineTo(-w + r, l);
+        shape.quadraticCurveTo(-w, l, -w, l - r);
+        shape.lineTo(-w, -l + r);
+        shape.quadraticCurveTo(-w, -l, -w + r, -l);
+
+        const extrudeSettings = { depth: 0.3, bevelEnabled: true, bevelSegments: 4, steps: 1, bevelSize: 0.2, bevelThickness: 0.2 };
+        const tabletGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+        tabletGeo.rotateX(Math.PI / 2); 
+
+        const tablet1 = new THREE.Mesh(tabletGeo, tabletMat);
+        tablet1.position.set(13, 0.4, -4); 
+        tablet1.rotation.y = -Math.PI / 6; 
+        tablet1.castShadow = true;
         this.scene.add(tablet1);
 
-        const tablet2 = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.3, 4.5), tabletMat);
-        tablet2.position.set(12, 0.45, -3); tablet2.rotation.y = Math.PI / 8; tablet2.castShadow = true;
+        const tablet2 = new THREE.Mesh(tabletGeo, tabletMat);
+        tablet2.position.set(11, 0.4, -11); 
+        tablet2.rotation.y = Math.PI / 8; 
+        tablet2.castShadow = true;
         this.scene.add(tablet2);
-
-        const potGeo = new THREE.SphereGeometry(2.5, 32, 16);
-        potGeo.applyMatrix4(new THREE.Matrix4().makeScale(1, 1.4, 1)); 
-        const pot = new THREE.Mesh(potGeo, new THREE.MeshStandardMaterial({ map: textures.pot, color: 0x885533, roughness: 1 }));
-        pot.position.set(16, 1.8, -12); pot.castShadow = true;
-        this.scene.add(pot);
     }
 
     createThickGuideLine() {
@@ -497,8 +512,6 @@ class Game3D {
         if(this.guideMesh) this.guideMesh.visible = false;
         
         document.getElementById('roll-btn-container').classList.add('disabled');
-        
-        // تشغيل صوت النرد (بدون تأخير وبدون مشاكل للمتصفح)
         playSFX('dice');
 
         let val = 0;
@@ -509,7 +522,7 @@ class Game3D {
             if(isLit) val++;
             
             anims.push(gsap.to(die.rotation, { x: Math.random()*10, y: Math.random()*10, duration: 0.6, ease: "power2.out" }));
-            anims.push(gsap.to(die.position, { y: 2, duration: 0.3, yoyo: true, repeat: 1, ease: "power1.out", x: -14.5 + (Math.random()*3 - 1.5), z: (Math.random()*3 - 1.5) }));
+            anims.push(gsap.to(die.position, { y: 3.5, duration: 0.3, yoyo: true, repeat: 1, ease: "power1.out", x: -14.5 + (Math.random()*2 - 1), z: (Math.random()*2 - 1) }));
             anims.push(gsap.to(die.material, { emissive: isLit ? 0xffffff : 0x000000, emissiveIntensity: isLit ? 0.3 : 0, duration: 0.6 }));
         });
 
@@ -656,7 +669,6 @@ class Game3D {
         this.guideMesh.visible = false; 
         this.clearHighlights(); 
         
-        // تشغيل صوت حركة الحجر فوراً 
         playSFX('move');
         
         const my = player === 1 ? this.p1Pos : this.p2Pos;
@@ -692,6 +704,9 @@ class Game3D {
             if(isRosette) {
                 this.logChat("🌸 وردة! ارمِ النرد مجدداً.");
                 this.resetForNextRoll();
+                if(this.turn === 2 && this.mode === 'BOT') {
+                    setTimeout(() => this.rollDice(), 1500); 
+                }
                 return;
             }
         } else {
@@ -756,7 +771,6 @@ function startCinematicIntro(mode) {
     document.getElementById('intro-overlay').style.display = 'flex';
     game = new Game3D(mode, true);
     
-    // تفعيل الـ AudioContext فوراً في أول ضغطة
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
@@ -774,7 +788,6 @@ function showZoomHint() {
 function endCinematicIntro() {
     document.getElementById('intro-overlay').style.display = 'none';
     
-    // تأكيد تفعيل الصوت
     if (audioCtx.state === 'suspended') audioCtx.resume();
     
     const audio = document.getElementById('bg-music');
@@ -791,13 +804,10 @@ function endCinematicIntro() {
     game.isCinematic = false;
     game.controls.autoRotate = false;
     
-    let tl = gsap.timeline({
-        onComplete: () => {
-            document.getElementById('ui-layer').style.display = 'block';
-            showZoomHint(); 
-        }
-    });
+    document.getElementById('ui-layer').style.display = 'block';
+    showZoomHint(); 
 
+    let tl = gsap.timeline();
     tl.to(game.camera.position, {
         x: game.defaultCamPos.x, y: game.defaultCamPos.y, z: game.defaultCamPos.z, 
         duration: 1.5, ease: "power2.inOut"
