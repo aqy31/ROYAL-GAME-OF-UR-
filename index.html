@@ -330,14 +330,22 @@ class Game3D {
         }
         document.body.appendChild(this.renderer.domElement);
 
-        const ambient = new THREE.AmbientLight(0xffddaa, 0.8);
+        // إضاءة محيطية بلون طيني دافئ
+        const ambient = new THREE.AmbientLight(0xffecd4, 0.6); 
         this.scene.add(ambient);
 
-        const pointLight = new THREE.PointLight(0xffa050, 2.0, 150);
-        pointLight.position.set(0, 20, 0);
-        pointLight.castShadow = true;
-        pointLight.shadow.mapSize.width = 1024;
-        pointLight.shadow.mapSize.height = 1024;
+        // إضاءة شمس مائلة تعطي ظلالاً جميلة للقطع والغرفة
+        const dirLight = new THREE.DirectionalLight(0xffa050, 1.5);
+        dirLight.position.set(15, 25, -15);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.bias = -0.001; 
+        this.scene.add(dirLight);
+
+        // ضوء خفيف في المنتصف لتعزيز لون الطين
+        const pointLight = new THREE.PointLight(0xff8833, 0.8, 100);
+        pointLight.position.set(0, 10, 0);
         this.scene.add(pointLight);
     }
 
@@ -360,10 +368,11 @@ class Game3D {
             this.scene.add(leg);
         });
 
+        // خامة الغرفة مع لون الطين
         textures.roomWall.wrapS = THREE.RepeatWrapping; textures.roomWall.wrapT = THREE.RepeatWrapping;
-        textures.roomWall.repeat.set(4, 4); 
+        textures.roomWall.repeat.set(6, 6); 
         const roomMat = new THREE.MeshStandardMaterial({ 
-            map: textures.roomWall, color: 0xffffff, roughness: 1, side: THREE.BackSide 
+            map: textures.roomWall, color: 0xc29b70, roughness: 1, side: THREE.BackSide 
         });
         
         const room = new THREE.Mesh(new THREE.BoxGeometry(150, 80, 150), roomMat);
@@ -379,7 +388,6 @@ class Game3D {
 
     createBoard() {
         const boardGroup = new THREE.Group();
-        // 🚨 هنا تم توحيد الخامة لجميع الجوانب بصورة وحدة (boardTex) 🚨
         const unifiedBoardMat = new THREE.MeshStandardMaterial({ map: textures.boardTex, color: 0xffffff, roughness: 0.8 });
         const materials = [unifiedBoardMat, unifiedBoardMat, unifiedBoardMat, unifiedBoardMat, unifiedBoardMat, unifiedBoardMat];
 
@@ -405,8 +413,8 @@ class Game3D {
     initPieces() {
         const createSet = (player) => {
             for(let i=0; i<7; i++) {
-                const geo = new THREE.SphereGeometry(0.85, 32, 16);
-                geo.applyMatrix4(new THREE.Matrix4().makeScale(1, 0.35, 1)); 
+                // استخدام شكل أسطواني لمنع تشوه الصورة
+                const geo = new THREE.CylinderGeometry(0.85, 0.85, 0.35, 32);
 
                 const pTex = player === 1 ? textures.pieceBlue : textures.pieceRed;
                 const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: pTex, metalness: 0.2, roughness: 0.5 });
@@ -423,7 +431,7 @@ class Game3D {
                     dotGeo.applyMatrix4(new THREE.Matrix4().makeScale(1, 0.3, 1));
                     const dotMat = new THREE.MeshBasicMaterial({color: 0xffffff});
                     const dot = new THREE.Mesh(dotGeo, dotMat);
-                    dot.position.y = 0.3; 
+                    dot.position.y = 0.18; // تم التعديل لتناسب السطح المستوي
                     piece.add(dot);
                 }
                 this.scene.add(piece);
