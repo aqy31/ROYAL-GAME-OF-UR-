@@ -247,7 +247,8 @@ ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 64, 64);
 const dashTexture = new THREE.CanvasTexture(canvas);
 dashTexture.wrapS = THREE.RepeatWrapping; dashTexture.wrapT = THREE.RepeatWrapping; dashTexture.repeat.set(12, 1);
 
-const CONFIG = { cell: 2.2, gap: 0 };
+// 🚨 تصغير حجم خشبة اللعب بنسبة مدروسة لتظهر الصورة الكاملة 🚨
+const CONFIG = { cell: 2.0, gap: 0 }; 
 const PATHS = {
     p1: [[2,3],[2,2],[2,1],[2,0],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[2,7],[2,6]],
     p2: [[0,3],[0,2],[0,1],[0,0],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[0,7],[0,6]]
@@ -324,21 +325,25 @@ class Game3D {
         }
         document.body.appendChild(this.renderer.domElement);
 
-        // تعديل الإضاءة لتكون احترافية وواقعية أكثر
-        const hemiLight = new THREE.HemisphereLight(0xfff0dd, 0x8b5a2b, 0.5); // دمج لون السماء الفاتح مع أرضية طينية
-        this.scene.add(hemiLight);
+        // 🚨 تحسين الإضاءة لتكون أرتب وأوضح بالمستوى المطلوب (Professional Sumerian Lighting) 🚨
+        
+        // ضوء محيطي دافئ متوازن
+        const ambientLight = new THREE.AmbientLight(0xfff3e0, 0.7); 
+        this.scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffa050, 1.2); // شمس مائلة قوية للظلال
-        dirLight.position.set(20, 30, -15);
+        // ضوء شمس مائل ناعم (Key light) - لون أنظف
+        const dirLight = new THREE.DirectionalLight(0xffe4b5, 0.9); 
+        dirLight.position.set(20, 35, -10); // تعديل الزاوية قليلاً
         dirLight.castShadow = true;
         dirLight.shadow.mapSize.width = 2048;
         dirLight.shadow.mapSize.height = 2048;
         dirLight.shadow.bias = -0.0005; 
         this.scene.add(dirLight);
 
-        const spotLight = new THREE.SpotLight(0xffddaa, 1.5); // كشاف ناعم يركز على اللعبة لإبراز تفاصيلها
-        spotLight.position.set(0, 20, 0);
-        spotLight.angle = Math.PI / 3;
+        // ضوء SpotLight مركز (Accent focus) - تخفيف الشدة
+        const spotLight = new THREE.SpotLight(0xffffff, 0.6); // لون أبيض أنظف للتركيز
+        spotLight.position.set(0, 25, 0);
+        spotLight.angle = Math.PI / 3.5; // زاوية أضيق قليلاً
         spotLight.penumbra = 0.8;
         spotLight.castShadow = true;
         this.scene.add(spotLight);
@@ -383,10 +388,8 @@ class Game3D {
     createBoard() {
         const boardGroup = new THREE.Group();
         
-        // خامة سفلية بلون الطين/الخشب الداكن لحواف المكعبات
         const baseMat = new THREE.MeshStandardMaterial({ color: 0x8a5a3a, roughness: 0.9 }); 
 
-        // بناء مجسمات اللعبة السفلية (كأساس فقط)
         for(let r=0; r<3; r++) {
             for(let c=0; c<8; c++) {
                 if((r==0||r==2) && (c==4||c==5)) continue;
@@ -396,7 +399,6 @@ class Game3D {
                 tile.position.set((c - 3.5) * CONFIG.cell, 0.6, (r - 1) * CONFIG.cell);
                 tile.receiveShadow = true; tile.castShadow = true;
                 
-                // خطوط بسيطة للتحديد الجانبي
                 const edges = new THREE.EdgesGeometry(geo);
                 const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x4a2a1a, linewidth: 1 }));
                 tile.add(line);
@@ -405,11 +407,9 @@ class Game3D {
             }
         }
 
-        // بناء الطبقة العلوية التي ستحمل الصورة كاملة كقطعة واحدة
         const c = CONFIG.cell;
         const shape = new THREE.Shape();
         
-        // رسم حدود رقعة اللعبة بالكامل
         shape.moveTo(-4 * c, -1.5 * c);
         shape.lineTo( 0 * c, -1.5 * c);
         shape.lineTo( 0 * c, -0.5 * c);
@@ -426,7 +426,6 @@ class Game3D {
 
         const topGeo = new THREE.ShapeGeometry(shape);
         
-        // حساب إحداثيات الصورة لتغطي كامل مساحة الشكل بشكل مثالي
         topGeo.computeBoundingBox();
         const bbox = topGeo.boundingBox;
         const uvAttribute = topGeo.attributes.uv;
@@ -436,12 +435,11 @@ class Game3D {
             uvAttribute.setXY(i, u, v);
         }
 
-        // إكساء الطبقة الرقيقة بالصورة المطلوبة
         const topMat = new THREE.MeshStandardMaterial({ map: textures.boardTex, roughness: 0.5, color: 0xffffff });
         const topMesh = new THREE.Mesh(topGeo, topMat);
         
         topMesh.rotation.x = -Math.PI / 2;
-        topMesh.position.y = 1.205; // نضعها أعلى المكعبات بشعرة واحدة لتعطي شكل الغطاء
+        topMesh.position.y = 1.205; 
         topMesh.receiveShadow = true;
         boardGroup.add(topMesh);
 
@@ -452,8 +450,8 @@ class Game3D {
     initPieces() {
         const createSet = (player) => {
             for(let i=0; i<7; i++) {
-                // تعديل عرض الأحجار وجعلها متعرجة كأنها منحوتة وليست ناعمة (10 أضلاع بدلاً من دائرية)
-                const geo = new THREE.CylinderGeometry(0.72, 0.72, 0.35, 10);
+                // 🚨 جعل الأحجار أكثر رقة (تقليل الارتفاع من 0.35 إلى 0.25) والضلوع المضلعة متعرجة 🚨
+                const geo = new THREE.CylinderGeometry(0.72, 0.72, 0.25, 10); 
 
                 const pTex = player === 1 ? textures.pieceBlue : textures.pieceRed;
                 const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: pTex, metalness: 0.2, roughness: 0.5 });
@@ -462,15 +460,17 @@ class Game3D {
                 piece.userData = { type: 'piece', player, id: i, anim: null, baseY: 0 };
                 
                 const zOffset = player === 1 ? 5.5 : -5.5;
-                piece.position.set(-6 + (i * 2), 0.35, zOffset);
-                piece.userData.baseY = 0.35; 
+                // تعديل بسيط في موقع الـ Y لتناسب الرقة الجديدة
+                piece.position.set(-6 + (i * 2), 0.3, zOffset); 
+                piece.userData.baseY = 0.3; 
 
                 if(player === 1) {
                     const dotGeo = new THREE.SphereGeometry(0.12, 16, 16);
                     dotGeo.applyMatrix4(new THREE.Matrix4().makeScale(1, 0.3, 1));
                     const dotMat = new THREE.MeshBasicMaterial({color: 0xffffff});
                     const dot = new THREE.Mesh(dotGeo, dotMat);
-                    dot.position.y = 0.18; 
+                    // تعديل موقع النقطة لتناسب الارتفاع الجديد
+                    dot.position.y = 0.13; 
                     piece.add(dot);
                 }
                 this.scene.add(piece);
@@ -510,8 +510,8 @@ class Game3D {
         const tabletMat = new THREE.MeshStandardMaterial({ map: textures.clay, color: 0xffffff, roughness: 0.9 });
         
         const shape = new THREE.Shape();
-        // زيادة نصف القطر r لتصبح الزوايا محدبة ومقوسة بشكل أوضح
-        const w = 1.6, l = 2.4, r = 0.8; 
+        // 🚨 حل مشكلة الرقيم قطعيًا: تكبير r (Radius) أكثر لجعل الزوايا أكثر انحناءً (تحدباً) بشدة 🚨
+        const w = 1.6, l = 2.4, r = 1.0; 
         shape.moveTo(-w + r, -l);
         shape.lineTo(w - r, -l);
         shape.quadraticCurveTo(w, -l, w, -l + r);
@@ -522,8 +522,8 @@ class Game3D {
         shape.lineTo(-w, -l + r);
         shape.quadraticCurveTo(-w, -l, -w + r, -l);
 
-        // تقليل العمق ليكون مسطحاً أكثر وزيادة تفاصيل الحواف (Bevel)
-        const extrudeSettings = { depth: 0.12, bevelEnabled: true, bevelSegments: 10, steps: 1, bevelSize: 0.4, bevelThickness: 0.25 };
+        // 🚨 جعل الرقيم أكثر تسطحاً وتقليل بروز الحواف (Bevel) 🚨
+        const extrudeSettings = { depth: 0.1, bevelEnabled: true, bevelSegments: 10, steps: 1, bevelSize: 0.2, bevelThickness: 0.15 };
         const tabletGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
         tabletGeo.rotateX(Math.PI / 2); 
 
@@ -738,16 +738,18 @@ class Game3D {
             
             gsap.to(pieceObj.position, { x: targetX, z: targetZ, duration: 0.6, ease: "power2.inOut" });
             await gsap.to(pieceObj.position, { y: 3, duration: 0.3, yoyo: true, repeat: 1, ease: "power1.inOut" });
-            pieceObj.position.y = 1.4; 
-            pieceObj.userData.baseY = 1.4; 
+            // تعديل بسيط في موقع الـ Y لتناسب الرقة الجديدة فوق الخشبة
+            pieceObj.position.y = 1.35; 
+            pieceObj.userData.baseY = 1.35; 
 
             if(newPosIdx >= 4 && newPosIdx <= 11) {
                 const capturedIdx = opp.findIndex((pos, i) => pos !== -1 && pos !== 14 && oppPath[pos][0] === path[newPosIdx][0] && oppPath[pos][1] === path[newPosIdx][1]);
                 if(capturedIdx !== -1) {
                     opp[capturedIdx] = -1;
                     const oppPiece = this.pieces.find(p => p.userData.player !== player && p.userData.id === capturedIdx);
-                    gsap.to(oppPiece.position, { x: -6 + (capturedIdx*2), y: 0.35, z: player === 1 ? -5.5 : 5.5, duration: 0.6, ease: "bounce.out" });
-                    oppPiece.userData.baseY = 0.35; 
+                    // تعديل موقع الـ Y للقطعة المأسورة لتناسب الرقة الجديدة في الدرج
+                    gsap.to(oppPiece.position, { x: -6 + (capturedIdx*2), y: 0.3, z: player === 1 ? -5.5 : 5.5, duration: 0.6, ease: "bounce.out" });
+                    oppPiece.userData.baseY = 0.3; 
                     this.logChat("⚔️ تم أسر حجر الخصم!");
                 }
             }
@@ -762,8 +764,9 @@ class Game3D {
                 return;
             }
         } else {
-            gsap.to(pieceObj.position, { x: 14, y: 0.35, duration: 0.6 });
-            pieceObj.userData.baseY = 0.35;
+            // تعديل موقع الـ Y للقطعة الفائزة لتناسب الرقة الجديدة
+            gsap.to(pieceObj.position, { x: 14, y: 0.3, duration: 0.6 });
+            pieceObj.userData.baseY = 0.3;
             this.logChat("🏁 حجر وصل بأمان!");
             this.updateScore();
         }
