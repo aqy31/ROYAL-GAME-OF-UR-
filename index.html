@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أور الملكية - النسخة الشاملة (حل نهائي للأصوات)</title>
+    <title>أور الملكية - النسخة الشاملة (أصوات سريعة بدون تأخير)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
@@ -45,10 +45,9 @@
         .slider-container { margin: 20px 0; text-align: right;}
         .slider-container label { display: block; margin-bottom: 10px; font-weight: bold; color: #d4af37;}
         
-        /* حل مشكلة شريط الصوت في الموبايل */
         input[type=range] { 
             width: 100%; accent-color: #d4af37; cursor: pointer;
-            touch-action: manipulation !important; /* يسمح بالسحب في الموبايل */
+            touch-action: manipulation !important; 
             pointer-events: auto;
         }
         
@@ -123,8 +122,6 @@
 <body>
 
 <audio id="bg-music" loop></audio>
-<audio id="sfx-dice" preload="auto"></audio>
-<audio id="sfx-move" preload="auto"></audio>
 
 <div id="ui-layer">
     <div id="top-ui">
@@ -210,14 +207,42 @@ const COLORS = {
 // ==========================================
 
 document.getElementById('launcher').style.backgroundImage = `url('${DESIGN_ASSETS.mainMenuBackground}')`;
+document.getElementById('bg-music').src = DESIGN_ASSETS.bgMusic;
 
-const bgMusicEl = document.getElementById('bg-music');
-const sfxDiceEl = document.getElementById('sfx-dice');
-const sfxMoveEl = document.getElementById('sfx-move');
+// 🔊 --- نظام الصوت الاحترافي (Web Audio API) لإنهاء التأخير (Zero Latency) --- 🔊
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+const audioBuffers = {};
 
-bgMusicEl.src = DESIGN_ASSETS.bgMusic;
-sfxDiceEl.src = DESIGN_ASSETS.diceSound;
-sfxMoveEl.src = DESIGN_ASSETS.moveSound;
+// وظيفة لتحميل الصوت مسبقاً وتخزينه في الـ RAM
+async function loadSFX(id, url) {
+    try {
+        const response = await fetch(url);
+        const arrayBuffer = await response.arrayBuffer();
+        const decodedData = await audioCtx.decodeAudioData(arrayBuffer);
+        audioBuffers[id] = decodedData;
+    } catch (err) {
+        console.log("Error loading audio:", err);
+    }
+}
+
+// نبدأ تحميل الأصوات فوراً أول ما يفتح الموقع
+loadSFX('dice', DESIGN_ASSETS.diceSound);
+loadSFX('move', DESIGN_ASSETS.moveSound);
+
+// وظيفة تشغيل الصوت الفوري (تشتغل حتى لو كان دور البوت)
+function playSFX(id) {
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    if (audioBuffers[id]) {
+        const source = audioCtx.createBufferSource();
+        source.buffer = audioBuffers[id];
+        source.connect(audioCtx.destination);
+        source.start(0);
+    }
+}
+// ----------------------------------------------------------------------------------
 
 const textureLoader = new THREE.TextureLoader();
 const textures = {
@@ -245,19 +270,6 @@ const PATHS = {
     p1: [[2,3],[2,2],[2,1],[2,0],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[2,7],[2,6]],
     p2: [[0,3],[0,2],[0,1],[0,0],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[0,7],[0,6]]
 };
-
-// 🔊 دالة استنساخ الصوت (لضمان التشغيل المستمر دون تقطيع)
-function playSFX(id) {
-    const audioEl = document.getElementById(id);
-    if (audioEl) {
-        const clone = audioEl.cloneNode(); // إنشاء نسخة جديدة للصوت في كل مرة
-        clone.volume = 1.0; // أعلى صوت دائماً للمؤثرات
-        let playPromise = clone.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(error => { /* تجاهل الأخطاء الصامتة */ });
-        }
-    }
-}
 
 class Game3D {
     constructor(mode, isCinematic = false) {
@@ -486,8 +498,8 @@ class Game3D {
         
         document.getElementById('roll-btn-container').classList.add('disabled');
         
-        // استنساخ وتشغيل صوت النرد
-        playSFX('sfx-dice');
+        // تشغيل صوت النرد (بدون تأخير وبدون مشاكل للمتصفح)
+        playSFX('dice');
 
         let val = 0;
         const anims = [];
@@ -644,8 +656,8 @@ class Game3D {
         this.guideMesh.visible = false; 
         this.clearHighlights(); 
         
-        // تشغيل صوت حركة الحجر فوراً لك وللكمبيوتر باستنساخ الصوت
-        playSFX('sfx-move');
+        // تشغيل صوت حركة الحجر فوراً 
+        playSFX('move');
         
         const my = player === 1 ? this.p1Pos : this.p2Pos;
         const opp = player === 1 ? this.p2Pos : this.p1Pos;
@@ -744,11 +756,10 @@ function startCinematicIntro(mode) {
     document.getElementById('intro-overlay').style.display = 'flex';
     game = new Game3D(mode, true);
     
-    // خداع المتصفح لفتح جميع الأصوات بصمت فور اللمسة الأولى
-    let sfxD = document.getElementById('sfx-dice');
-    let sfxM = document.getElementById('sfx-move');
-    sfxD.volume = 0; sfxD.play().then(()=>sfxD.pause()).catch(e=>{});
-    sfxM.volume = 0; sfxM.play().then(()=>sfxM.pause()).catch(e=>{});
+    // تفعيل الـ AudioContext فوراً في أول ضغطة
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
 }
 
 function showZoomHint() {
@@ -762,6 +773,9 @@ function showZoomHint() {
 
 function endCinematicIntro() {
     document.getElementById('intro-overlay').style.display = 'none';
+    
+    // تأكيد تفعيل الصوت
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     
     const audio = document.getElementById('bg-music');
     if(!isMusicMuted) {
