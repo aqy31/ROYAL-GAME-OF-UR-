@@ -2,21 +2,26 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أور الملكية - نسخة المصمم (مع مقدمة سينمائية)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>أور الملكية - النسخة الشاملة</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #050505; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        canvas { background: transparent !important; }
+        /* منع التحديد والسحب العشوائي في الموبايل */
+        body { 
+            margin: 0; overflow: hidden; background-color: #050505; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            touch-action: none; user-select: none; -webkit-user-select: none;
+        }
+        canvas { background: transparent !important; display: block; touch-action: none; }
         
-        #ui-layer { position: absolute; inset: 0; pointer-events: none; z-index: 10; display: none; } /* مخفي في البداية */
+        #ui-layer { position: absolute; inset: 0; pointer-events: none; z-index: 10; display: none; } 
         .interactive { pointer-events: auto; }
         
-        #bottom-bar { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 15px; align-items: flex-end; z-index: 20; }
+        #bottom-bar { position: absolute; bottom: 20px; left: 20px; right: 20px; display: flex; gap: 15px; align-items: flex-end; justify-content: flex-start; z-index: 20; }
         #roll-btn-container {
-            background: linear-gradient(135deg, #d4af37, #8a6a1c); border: 2px solid #000; border-radius: 4px; width: 100px; height: 80px;
+            background: linear-gradient(135deg, #d4af37, #8a6a1c); border: 2px solid #000; border-radius: 8px; width: 100px; height: 80px;
             display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 2px 2px 10px rgba(0,0,0,0.8); transition: 0.2s; pointer-events: auto;
         }
         #roll-btn-container:hover { filter: brightness(1.2); }
@@ -28,40 +33,50 @@
         .roll-text { color: #000; font-weight: bold; font-size: 14px; text-shadow: 0px 1px 1px rgba(255,255,255,0.3); }
 
         #chat-log {
-            background: rgba(0, 0, 0, 0.75); border: 1px solid #444; width: 350px; height: 70px;
-            padding: 8px; box-sizing: border-box; color: #aaa; font-family: 'Courier New', Courier, monospace; font-size: 11px;
+            background: rgba(0, 0, 0, 0.75); border: 1px solid #444; width: 350px; height: 70px; border-radius: 8px;
+            padding: 8px; box-sizing: border-box; color: #aaa; font-family: 'Courier New', Courier, monospace; font-size: 12px;
             display: flex; flex-direction: column; justify-content: flex-end; pointer-events: auto;
         }
         .log-entry { margin-bottom: 2px; }
 
-        /* الشاشة الرئيسية */
         #launcher {
             position: fixed; inset: 0; background-color: #111; background-size: cover; background-position: center;
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
         }
-        .menu-box { background: rgba(10, 5, 0, 0.85); padding: 40px; border: 2px solid #d4af37; border-radius: 15px; text-align: center; backdrop-filter: blur(5px);}
-        .btn { display: block; width: 250px; padding: 12px; margin: 10px auto; background: #d4af37; color: #000; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px;}
+        .menu-box { background: rgba(10, 5, 0, 0.85); padding: 30px; border: 2px solid #d4af37; border-radius: 15px; text-align: center; backdrop-filter: blur(5px); max-width: 90%;}
+        .btn { display: block; width: 100%; max-width: 250px; padding: 15px; margin: 10px auto; background: #d4af37; color: #000; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; border-radius: 8px;}
         .btn:hover { background: #fff; transform: scale(1.05); }
 
-        #status-bar { position: absolute; top: 20px; width: 100%; text-align: center; color: #d4af37; font-size: 2rem; text-shadow: 2px 2px 4px #000; font-weight: bold; }
+        #status-bar { position: absolute; top: 20px; width: 100%; text-align: center; color: #d4af37; font-size: 2rem; text-shadow: 2px 2px 4px #000; font-weight: bold; pointer-events: none;}
 
-        /* شاشة التعليمات والمقدمة السينمائية */
         #intro-overlay {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4);
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
             display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 80;
         }
         .intro-box {
-            background: rgba(20, 15, 10, 0.9); padding: 30px; border: 2px solid #d4af37; border-radius: 10px; text-align: center; color: white; max-width: 500px; box-shadow: 0 0 30px #000;
+            background: rgba(20, 15, 10, 0.95); padding: 25px; border: 2px solid #d4af37; border-radius: 10px; text-align: center; color: white; width: 85%; max-width: 500px; box-shadow: 0 0 30px #000; box-sizing: border-box;
         }
-        .intro-box h2 { color: #d4af37; margin-top: 0; border-bottom: 1px solid #d4af37; padding-bottom: 10px;}
-        .intro-box p { font-size: 18px; line-height: 1.6; text-align: right;}
+        .intro-box h2 { color: #d4af37; margin-top: 0; border-bottom: 1px solid #d4af37; padding-bottom: 10px; font-size: 22px;}
+        .intro-box p { font-size: 16px; line-height: 1.6; text-align: right; margin: 10px 0;}
+
+        /* --- إعدادات الموبايل والآيباد (Responsive) --- */
+        @media (max-width: 768px) {
+            #status-bar { font-size: 1.5rem; top: 10px; }
+            #bottom-bar { bottom: 10px; left: 10px; right: 10px; gap: 10px; }
+            #roll-btn-container { width: 80px; height: 70px; }
+            .dice-icon { width: 25px; height: 25px; }
+            .dice-icon::after { top: 6px; left: 6px; width: 3px; height: 3px; box-shadow: 7px 0 0 white, 3px 7px 0 white; }
+            .roll-text { font-size: 12px; }
+            #chat-log { width: calc(100% - 90px); height: 70px; font-size: 10px; }
+            .menu-box { padding: 20px; }
+            .intro-box p { font-size: 14px; }
+        }
     </style>
 </head>
 <body>
 
 <audio id="bg-music" loop>
-    <source src="" type="audio/mpeg">
-</audio>
+    </audio>
 
 <div id="ui-layer">
     <div id="status-bar">أور الملكية</div>
@@ -71,14 +86,14 @@
             <div class="roll-text">Roll</div>
         </div>
         <div id="chat-log">
-            <div class="log-entry">The match has begun!</div>
+            <div class="log-entry">بدأت اللعبة!</div>
         </div>
     </div>
 </div>
 
 <div id="launcher">
     <div class="menu-box">
-        <h1 style="color: #d4af37; margin-bottom: 30px;">أور الملكية</h1>
+        <h1 style="color: #d4af37; margin-bottom: 20px;">أور الملكية</h1>
         <button class="btn" onclick="startCinematicIntro('PVP')">لاعب ضد لاعب</button>
         <button class="btn" onclick="startCinematicIntro('BOT')" style="background: #8d6e63;">الكمبيوتر</button>
     </div>
@@ -107,13 +122,11 @@ const DESIGN_ASSETS = {
     pieceTexture: 'https://images.unsplash.com/photo-1521106047354-5a5b85e819ee?q=80&w=500',
     diceTexture: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Ancient_Mesopotamian_dice.jpg',
     trayTexture: 'https://images.unsplash.com/photo-1522066841261-2679905c1e19?q=80&w=500',
-    
-    // الألواح الطينية والفخار
     clayTablet: 'https://images.unsplash.com/photo-1616743845946-b33c0617baea?q=80&w=500', 
     pottery: 'https://images.unsplash.com/photo-1610705462521-1dc53460df76?q=80&w=500',
 
-    // رابط موسيقى الخلفية (يمكنك تغييره لأي رابط mp3 خاص بك)
-    bgMusic: 'music'
+    // رابط الموسيقى (تأكد أن الملف في مجلدك اسمه music.mp3)
+    bgMusic: 'music.mp3'
 };
 
 const COLORS = {
@@ -122,7 +135,6 @@ const COLORS = {
 // ==========================================
 
 document.getElementById('launcher').style.backgroundImage = `url('${DESIGN_ASSETS.mainMenuBackground}')`;
-document.getElementById('bg-music').src = DESIGN_ASSETS.bgMusic;
 
 const textureLoader = new THREE.TextureLoader();
 const textures = {
@@ -165,9 +177,9 @@ class Game3D {
         this.controls.enableDamping = true; 
         this.controls.dampingFactor = 0.05;
         this.controls.target.set(0, 0, 0); 
-        this.controls.maxPolarAngle = Math.PI / 2.6; // منع الكاميرا من النزول تحت الطاولة
+        this.controls.maxPolarAngle = Math.PI / 2.6; 
         this.controls.minDistance = 10;
-        this.controls.maxDistance = 45; 
+        this.controls.maxDistance = 50; 
         
         this.pieces = [];
         this.diceModels = [];
@@ -188,23 +200,27 @@ class Game3D {
         this.createThickGuideLine();
         this.animate();
 
+        // أحداث اللمس والماوس المحدثة
         window.addEventListener('pointerdown', (e) => { this.pointerDownPos.set(e.clientX, e.clientY); });
         window.addEventListener('pointerup', (e) => this.onPointerUp(e));
         window.addEventListener('pointermove', (e) => this.onMouseMove(e));
 
-        // إعداد الكاميرا بناءً على ما إذا كانت هناك مقدمة سينمائية أم لا
+        // ضبط الكاميرا الأساسية (تبتعد في الموبايل لتشمل اللوحة)
+        this.isMobile = window.innerWidth < 768;
+        this.defaultCamPos = this.isMobile ? {x: 0, y: 22, z: 32} : {x: 0, y: 16, z: 26};
+
         if(this.isCinematic) {
             this.camera.position.set(30, 20, 30);
             this.controls.autoRotate = true;
             this.controls.autoRotateSpeed = 1.5;
         } else {
-            this.camera.position.set(0, 16, 26); 
+            this.camera.position.set(this.defaultCamPos.x, this.defaultCamPos.y, this.defaultCamPos.z); 
         }
     }
 
     initScene() {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // تحسين الأداء للموبايل
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(this.renderer.domElement);
@@ -215,8 +231,8 @@ class Game3D {
         const sun = new THREE.DirectionalLight(0xffddaa, 1.2);
         sun.position.set(2, 15, 10); 
         sun.castShadow = true;
-        sun.shadow.mapSize.width = 2048;
-        sun.shadow.mapSize.height = 2048;
+        sun.shadow.mapSize.width = 1024; // تقليل دقة الظل قليلاً لسرعة الموبايل
+        sun.shadow.mapSize.height = 1024;
         this.scene.add(sun);
 
         const pointLight = new THREE.PointLight(0xffaa55, 0.8, 50);
@@ -237,11 +253,9 @@ class Game3D {
 
     createBoard() {
         const boardGroup = new THREE.Group();
-        
         for(let r=0; r<3; r++) {
             for(let c=0; c<8; c++) {
                 if((r==0||r==2) && (c==4||c==5)) continue;
-
                 const isRosette = (r===0&&c===0)||(r===0&&c===6)||(r===1&&c===3)||(r===2&&c===0)||(r===2&&c===6);
                 
                 const topMat = new THREE.MeshStandardMaterial({ map: isRosette ? textures.boardRosette : textures.boardNorm, color: isRosette ? 0xffeebb : 0xeeddcc, roughness: 0.8 });
@@ -282,7 +296,7 @@ class Game3D {
                 
                 const zOffset = player === 1 ? 5.5 : -5.5;
                 piece.position.set(-6 + (i * 2), 0.35, zOffset);
-                piece.userData.baseY = 0.35; // حفظ الارتفاع الأولي
+                piece.userData.baseY = 0.35; 
 
                 if(player === 1) {
                     const dotGeo = new THREE.SphereGeometry(0.12, 16, 16);
@@ -292,7 +306,6 @@ class Game3D {
                     dot.position.y = 0.3; 
                     piece.add(dot);
                 }
-
                 this.scene.add(piece);
                 this.pieces.push(piece);
             }
@@ -327,7 +340,6 @@ class Game3D {
     }
 
     createDecorations() {
-        // لوح طيني 1
         const tabletGeo1 = new THREE.BoxGeometry(4, 0.3, 5);
         const tabletMat = new THREE.MeshStandardMaterial({ map: textures.clay, color: 0xaa8866, roughness: 0.9 });
         const tablet1 = new THREE.Mesh(tabletGeo1, tabletMat);
@@ -336,15 +348,13 @@ class Game3D {
         tablet1.castShadow = true;
         this.scene.add(tablet1);
 
-        // لوح طيني 2 (فوقه بشكل عشوائي)
         const tabletGeo2 = new THREE.BoxGeometry(3.5, 0.3, 4.5);
         const tablet2 = new THREE.Mesh(tabletGeo2, tabletMat);
-        tablet2.position.set(12, 0.45, -3); // أرفعه قليلاً ليكون فوق الأول
+        tablet2.position.set(12, 0.45, -3); 
         tablet2.rotation.y = Math.PI / 8;
         tablet2.castShadow = true;
         this.scene.add(tablet2);
 
-        // الجرة الفخارية
         const potGeo = new THREE.SphereGeometry(2.5, 32, 16);
         potGeo.applyMatrix4(new THREE.Matrix4().makeScale(1, 1.4, 1)); 
         const potMat = new THREE.MeshStandardMaterial({ map: textures.pot, color: 0x885533, roughness: 1 });
@@ -437,9 +447,7 @@ class Game3D {
         this.pieces.forEach(p => {
             if (p.userData.player === this.turn && moves.includes(p.userData.id)) {
                 if (!p.userData.anim) {
-                    // تحديث الموقع الأساسي للحجر قبل بدء الحركة لمنعه من النزول بداخل الخشب
                     p.userData.baseY = p.position.y;
-                    // يقفز للأعلى بمقدار 0.5 من موقعه الحالي
                     p.userData.anim = gsap.to(p.position, { y: p.userData.baseY + 0.5, duration: 0.4, yoyo: true, repeat: -1 });
                 }
             }
@@ -450,7 +458,6 @@ class Game3D {
         this.pieces.forEach(p => {
             if (p.userData.anim) {
                 p.userData.anim.kill(); p.userData.anim = null;
-                // يرجع لمكانه الأصلي الصحيح
                 gsap.to(p.position, { y: p.userData.baseY, duration: 0.2 });
             }
         });
@@ -480,8 +487,16 @@ class Game3D {
     }
 
     onMouseMove(event) {
-        this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        // تحديث الإحداثيات مع دعم اللمس (Touch) والموبايل
+        let clientX = event.clientX;
+        let clientY = event.clientY;
+        if(event.touches && event.touches.length > 0) {
+            clientX = event.touches[0].clientX;
+            clientY = event.touches[0].clientY;
+        }
+
+        this.mouse.x = (clientX / window.innerWidth) * 2 - 1;
+        this.mouse.y = -(clientY / window.innerHeight) * 2 + 1;
 
         if (this.isLocked || this.isCinematic || this.rollValue === 0 || (this.mode === 'BOT' && this.turn === 2)) {
             if(this.guideMesh) this.guideMesh.visible = false;
@@ -503,7 +518,8 @@ class Game3D {
 
     onPointerUp(event) {
         if (this.isCinematic) return;
-        if (Math.hypot(event.clientX - this.pointerDownPos.x, event.clientY - this.pointerDownPos.y) > 5) return; 
+        // زيادة التسامح في الموبايل لتمييز اللمس عن السحب (كانت 5 أصبحت 15)
+        if (Math.hypot(event.clientX - this.pointerDownPos.x, event.clientY - this.pointerDownPos.y) > 15) return; 
         if(this.isLocked || this.rollValue === 0) return;
 
         this.raycaster.setFromCamera(this.mouse, this.camera);
@@ -538,7 +554,7 @@ class Game3D {
             gsap.to(pieceObj.position, { x: targetX, z: targetZ, duration: 0.6, ease: "power2.inOut" });
             await gsap.to(pieceObj.position, { y: 3, duration: 0.3, yoyo: true, repeat: 1, ease: "power1.inOut" });
             pieceObj.position.y = 1.4; 
-            pieceObj.userData.baseY = 1.4; // تحديث الارتفاع الأساسي الجديد
+            pieceObj.userData.baseY = 1.4; 
 
             if(newPosIdx >= 4 && newPosIdx <= 11) {
                 const capturedIdx = opp.findIndex((pos, i) => pos !== -1 && pos !== 14 && oppPath[pos][0] === path[newPosIdx][0] && oppPath[pos][1] === path[newPosIdx][1]);
@@ -546,7 +562,7 @@ class Game3D {
                     opp[capturedIdx] = -1;
                     const oppPiece = this.pieces.find(p => p.userData.player !== player && p.userData.id === capturedIdx);
                     gsap.to(oppPiece.position, { x: -6 + (capturedIdx*2), y: 0.35, z: player === 1 ? -5.5 : 5.5, duration: 0.6, ease: "bounce.out" });
-                    oppPiece.userData.baseY = 0.35; // تحديث ارتفاع الخصم بعد طرده
+                    oppPiece.userData.baseY = 0.35; 
                     this.logChat("تم أكل حجر!");
                 }
             }
@@ -606,27 +622,37 @@ class Game3D {
 
 let game;
 
-// دالة بدء المقدمة السينمائية
 function startCinematicIntro(mode) {
     document.getElementById('launcher').style.display = 'none';
     document.getElementById('intro-overlay').style.display = 'flex';
     game = new Game3D(mode, true);
 }
 
-// دالة إنهاء المقدمة وبدء اللعب
+// تعديل الدالة لضمان عمل الصوت فوراً في الموبايل
 function endCinematicIntro() {
     document.getElementById('intro-overlay').style.display = 'none';
     
-    // تشغيل الموسيقى
+    // إجبار الصوت على العمل داخل نفس ضغطة الزر
     const audio = document.getElementById('bg-music');
-    audio.volume = 0.4; // مستوى الصوت 40%
-    audio.play().catch(e => console.log("المتصفح يمنع التشغيل التلقائي للصوت"));
+    audio.src = DESIGN_ASSETS.bgMusic; 
+    audio.volume = 0.4; 
+    
+    let playPromise = audio.play();
+    if (playPromise !== undefined) {
+        playPromise.catch(error => {
+            // حل استثنائي للأجهزة العنيدة جداً
+            console.log("الصوت محظور مؤقتاً، سيتم التشغيل مع اللمسة القادمة");
+            window.addEventListener('pointerdown', () => audio.play(), { once: true });
+        });
+    }
 
-    // إيقاف الدوران وتحريك الكاميرا لمكان اللعب
     game.isCinematic = false;
     game.controls.autoRotate = false;
     gsap.to(game.camera.position, {
-        x: 0, y: 16, z: 26, duration: 2, ease: "power2.inOut",
+        x: game.defaultCamPos.x, 
+        y: game.defaultCamPos.y, 
+        z: game.defaultCamPos.z, 
+        duration: 2, ease: "power2.inOut",
         onComplete: () => {
             document.getElementById('ui-layer').style.display = 'block';
         }
@@ -635,6 +661,12 @@ function endCinematicIntro() {
 
 window.addEventListener('resize', () => {
     if(!game) return;
+    game.isMobile = window.innerWidth < 768;
+    game.defaultCamPos = game.isMobile ? {x: 0, y: 22, z: 32} : {x: 0, y: 16, z: 26};
+    
+    if(!game.isCinematic) {
+        game.camera.position.set(game.defaultCamPos.x, game.defaultCamPos.y, game.defaultCamPos.z);
+    }
     game.camera.aspect = window.innerWidth / window.innerHeight;
     game.camera.updateProjectionMatrix();
     game.renderer.setSize(window.innerWidth, window.innerHeight);
