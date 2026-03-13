@@ -3,90 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أور الملكية - النسخة الشاملة</title>
+    <title>أور الملكية - نسخة الموبايل المحسنة</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
     <style>
-        /* منع التحديد والسحب العشوائي في الموبايل */
         body { 
             margin: 0; overflow: hidden; background-color: #050505; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             touch-action: none; user-select: none; -webkit-user-select: none;
         }
-        canvas { background: transparent !important; display: block; touch-action: none; }
+        canvas { background: transparent !important; display: block; touch-action: none; outline: none; }
         
         #ui-layer { position: absolute; inset: 0; pointer-events: none; z-index: 10; display: none; } 
         .interactive { pointer-events: auto; }
         
+        /* --- واجهة النتيجة العلوية الجديدة --- */
+        #top-ui {
+            position: absolute; top: 15px; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; box-sizing: border-box; pointer-events: none; z-index: 20;
+        }
+        .score-box {
+            background: rgba(10, 5, 0, 0.85); border: 2px solid #d4af37; padding: 10px 20px; border-radius: 10px; color: white; font-weight: bold; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+        }
+        .score-box.p1 { border-color: #4cc9f0; color: #4cc9f0; } /* أزرق */
+        .score-box.p2 { border-color: #f72585; color: #f72585; } /* أحمر */
+        .score-num { display: block; font-size: 1.8rem; color: white; margin-top: 5px;}
+        
+        #status-bar { color: #d4af37; font-size: 1.8rem; text-shadow: 2px 2px 5px #000; font-weight: bold; background: rgba(0,0,0,0.5); padding: 5px 20px; border-radius: 20px;}
+
+        /* --- الواجهة السفلية (النرد والحركات) --- */
         #bottom-bar { position: absolute; bottom: 20px; left: 20px; right: 20px; display: flex; gap: 15px; align-items: flex-end; justify-content: flex-start; z-index: 20; }
         #roll-btn-container {
-            background: linear-gradient(135deg, #d4af37, #8a6a1c); border: 2px solid #000; border-radius: 8px; width: 100px; height: 80px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 2px 2px 10px rgba(0,0,0,0.8); transition: 0.2s; pointer-events: auto;
+            background: linear-gradient(135deg, #d4af37, #8a6a1c); border: 2px solid #000; border-radius: 12px; width: 110px; height: 85px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 15px rgba(0,0,0,0.8); transition: 0.2s; pointer-events: auto;
         }
-        #roll-btn-container:hover { filter: brightness(1.2); }
+        #roll-btn-container:hover { filter: brightness(1.2); transform: translateY(-2px); }
         #roll-btn-container:active { transform: scale(0.95); }
-        #roll-btn-container.disabled { filter: grayscale(1); opacity: 0.5; cursor: not-allowed; }
+        #roll-btn-container.disabled { filter: grayscale(1); opacity: 0.5; cursor: not-allowed; transform: none;}
         
         .dice-icon { width: 35px; height: 35px; background-color: #0a1526; border-radius: 50%; border: 2px solid #000; margin-bottom: 5px; position: relative; }
-        .dice-icon::after { content: ''; position: absolute; top: 10px; left: 10px; width: 4px; height: 4px; background: white; border-radius: 50%; box-shadow: 10px 0 0 white, 5px 10px 0 white; }
-        .roll-text { color: #000; font-weight: bold; font-size: 14px; text-shadow: 0px 1px 1px rgba(255,255,255,0.3); }
+        .dice-icon::after { content: ''; position: absolute; top: 10px; left: 10px; width: 5px; height: 5px; background: white; border-radius: 50%; box-shadow: 10px 0 0 white, 5px 10px 0 white; }
+        .roll-text { color: #000; font-weight: bold; font-size: 15px; }
 
         #chat-log {
-            background: rgba(0, 0, 0, 0.75); border: 1px solid #444; width: 350px; height: 70px; border-radius: 8px;
-            padding: 8px; box-sizing: border-box; color: #aaa; font-family: 'Courier New', Courier, monospace; font-size: 12px;
-            display: flex; flex-direction: column; justify-content: flex-end; pointer-events: auto;
+            background: rgba(10, 10, 15, 0.85); border: 1px solid #d4af37; width: 350px; height: 85px; border-radius: 10px;
+            padding: 10px; box-sizing: border-box; color: #ddd; font-family: 'Courier New', Courier, monospace; font-size: 13px;
+            display: flex; flex-direction: column; justify-content: flex-end; pointer-events: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.7);
         }
-        .log-entry { margin-bottom: 2px; }
+        .log-entry { margin-bottom: 3px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px;}
 
+        /* --- القوائم --- */
         #launcher {
             position: fixed; inset: 0; background-color: #111; background-size: cover; background-position: center;
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
         }
-        .menu-box { background: rgba(10, 5, 0, 0.85); padding: 30px; border: 2px solid #d4af37; border-radius: 15px; text-align: center; backdrop-filter: blur(5px); max-width: 90%;}
+        .menu-box { background: rgba(10, 5, 0, 0.9); padding: 30px; border: 2px solid #d4af37; border-radius: 15px; text-align: center; max-width: 90%; box-shadow: 0 0 40px rgba(0,0,0,0.9);}
         .btn { display: block; width: 100%; max-width: 250px; padding: 15px; margin: 10px auto; background: #d4af37; color: #000; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; border-radius: 8px;}
-        .btn:hover { background: #fff; transform: scale(1.05); }
-
-        #status-bar { position: absolute; top: 20px; width: 100%; text-align: center; color: #d4af37; font-size: 2rem; text-shadow: 2px 2px 4px #000; font-weight: bold; pointer-events: none;}
-
+        
         #intro-overlay {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
             display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 80;
         }
         .intro-box {
-            background: rgba(20, 15, 10, 0.95); padding: 25px; border: 2px solid #d4af37; border-radius: 10px; text-align: center; color: white; width: 85%; max-width: 500px; box-shadow: 0 0 30px #000; box-sizing: border-box;
+            background: rgba(20, 15, 10, 0.95); padding: 25px; border: 2px solid #d4af37; border-radius: 10px; text-align: center; color: white; width: 90%; max-width: 500px;
         }
-        .intro-box h2 { color: #d4af37; margin-top: 0; border-bottom: 1px solid #d4af37; padding-bottom: 10px; font-size: 22px;}
-        .intro-box p { font-size: 16px; line-height: 1.6; text-align: right; margin: 10px 0;}
+        .intro-box h2 { color: #d4af37; border-bottom: 1px solid #d4af37; padding-bottom: 10px; font-size: 22px;}
+        .intro-box p { font-size: 16px; line-height: 1.6; margin: 10px 0;}
 
-        /* --- إعدادات الموبايل والآيباد (Responsive) --- */
+        /* --- تحسينات الشاشات الصغيرة (Responsive) --- */
         @media (max-width: 768px) {
-            #status-bar { font-size: 1.5rem; top: 10px; }
-            #bottom-bar { bottom: 10px; left: 10px; right: 10px; gap: 10px; }
-            #roll-btn-container { width: 80px; height: 70px; }
-            .dice-icon { width: 25px; height: 25px; }
-            .dice-icon::after { top: 6px; left: 6px; width: 3px; height: 3px; box-shadow: 7px 0 0 white, 3px 7px 0 white; }
-            .roll-text { font-size: 12px; }
-            #chat-log { width: calc(100% - 90px); height: 70px; font-size: 10px; }
-            .menu-box { padding: 20px; }
-            .intro-box p { font-size: 14px; }
+            #top-ui { padding: 0 10px; top: 10px; }
+            .score-box { padding: 5px 10px; font-size: 12px; }
+            .score-num { font-size: 1.4rem; margin-top: 2px;}
+            #status-bar { font-size: 1.2rem; padding: 5px 10px;}
+            
+            #bottom-bar { bottom: 15px; left: 10px; right: 10px; gap: 10px; }
+            #roll-btn-container { width: 90px; height: 75px; }
+            .dice-icon { width: 28px; height: 28px; }
+            .roll-text { font-size: 13px; }
+            
+            #chat-log { width: calc(100% - 100px); height: 75px; font-size: 11px; padding: 5px 8px; }
         }
     </style>
 </head>
 <body>
 
-<audio id="bg-music" loop>
-    </audio>
+<audio id="bg-music" loop></audio>
 
 <div id="ui-layer">
-    <div id="status-bar">أور الملكية</div>
+    <div id="top-ui">
+        <div class="score-box p1">اللازورد <span class="score-num" id="s1">0</span></div>
+        <div id="status-bar">دورك للعب</div>
+        <div class="score-box p2">العقيق <span class="score-num" id="s2">0</span></div>
+    </div>
+    
     <div id="bottom-bar">
         <div id="roll-btn-container" onclick="if(game && !game.isCinematic) game.rollDice()">
             <div class="dice-icon"></div>
-            <div class="roll-text">Roll</div>
+            <div class="roll-text">رمي النرد</div>
         </div>
         <div id="chat-log">
-            <div class="log-entry">بدأت اللعبة!</div>
+            <div class="log-entry">🟢 اللعبة جاهزة، بالتوفيق!</div>
         </div>
     </div>
 </div>
@@ -103,8 +120,8 @@
     <div class="intro-box">
         <h2>تعليمات اللعبة</h2>
         <p>🎲 <b>النرد:</b> ارمِ النرد لتحصل على خطوات (0 إلى 4).</p>
-        <p>⚔️ <b>القتال:</b> حرك حجرك نحو المسار المركزي المشترك وتجنب أن يأكلك الخصم.</p>
-        <p>🌸 <b>الوردة:</b> قف على مربعات الوردة لتحصل على رمية إضافية وتكون في أمان.</p>
+        <p>⚔️ <b>القتال:</b> حرك حجرك للمسار المشترك وكل حجر الخصم لترجعه للبداية.</p>
+        <p>🌸 <b>الوردة:</b> قف على الوردة لتحصل على رمية إضافية وتكون في أمان.</p>
         <button class="btn" onclick="endCinematicIntro()" style="margin-top: 20px;">ابدأ اللعب الآن</button>
     </div>
 </div>
@@ -125,7 +142,6 @@ const DESIGN_ASSETS = {
     clayTablet: 'https://images.unsplash.com/photo-1616743845946-b33c0617baea?q=80&w=500', 
     pottery: 'https://images.unsplash.com/photo-1610705462521-1dc53460df76?q=80&w=500',
 
-    // رابط الموسيقى (تأكد أن الملف في مجلدك اسمه music.mp3)
     bgMusic: 'music.mp3'
 };
 
@@ -161,7 +177,6 @@ const PATHS = {
     p1: [[2,3],[2,2],[2,1],[2,0],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[2,7],[2,6]],
     p2: [[0,3],[0,2],[0,1],[0,0],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[0,7],[0,6]]
 };
-const ROSETTES = ["0,0", "0,6", "1,3", "2,0", "2,6", "2,0", "2,6"]; 
 
 class Game3D {
     constructor(mode, isCinematic = false) {
@@ -177,9 +192,6 @@ class Game3D {
         this.controls.enableDamping = true; 
         this.controls.dampingFactor = 0.05;
         this.controls.target.set(0, 0, 0); 
-        this.controls.maxPolarAngle = Math.PI / 2.6; 
-        this.controls.minDistance = 10;
-        this.controls.maxDistance = 50; 
         
         this.pieces = [];
         this.diceModels = [];
@@ -200,14 +212,23 @@ class Game3D {
         this.createThickGuideLine();
         this.animate();
 
-        // أحداث اللمس والماوس المحدثة
+        // ** إصلاح اللمس للموبايل بشكل دقيق **
         window.addEventListener('pointerdown', (e) => { this.pointerDownPos.set(e.clientX, e.clientY); });
         window.addEventListener('pointerup', (e) => this.onPointerUp(e));
         window.addEventListener('pointermove', (e) => this.onMouseMove(e));
+        
+        // دعم التاتش للأجهزة العنيدة
+        window.addEventListener('touchstart', (e) => {
+            if(e.touches.length > 0) { this.pointerDownPos.set(e.touches[0].clientX, e.touches[0].clientY); }
+        }, {passive: true});
+        window.addEventListener('touchend', (e) => this.onTouchEnd(e), {passive: false});
 
-        // ضبط الكاميرا الأساسية (تبتعد في الموبايل لتشمل اللوحة)
+        // ضبط الكاميرا للموبايل لترتفع وتنظر للأسفل لسهولة النقر
         this.isMobile = window.innerWidth < 768;
-        this.defaultCamPos = this.isMobile ? {x: 0, y: 22, z: 32} : {x: 0, y: 16, z: 26};
+        this.defaultCamPos = this.isMobile ? {x: 0, y: 30, z: 20} : {x: 0, y: 16, z: 26};
+        this.controls.maxPolarAngle = this.isMobile ? Math.PI / 2.8 : Math.PI / 2.6;
+        this.controls.minDistance = 10;
+        this.controls.maxDistance = 50; 
 
         if(this.isCinematic) {
             this.camera.position.set(30, 20, 30);
@@ -220,21 +241,19 @@ class Game3D {
 
     initScene() {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // تحسين الأداء للموبايل
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(this.renderer.domElement);
 
         const ambient = new THREE.AmbientLight(0xffeedd, 0.7);
         this.scene.add(ambient);
-
         const sun = new THREE.DirectionalLight(0xffddaa, 1.2);
         sun.position.set(2, 15, 10); 
         sun.castShadow = true;
-        sun.shadow.mapSize.width = 1024; // تقليل دقة الظل قليلاً لسرعة الموبايل
+        sun.shadow.mapSize.width = 1024;
         sun.shadow.mapSize.height = 1024;
         this.scene.add(sun);
-
         const pointLight = new THREE.PointLight(0xffaa55, 0.8, 50);
         pointLight.position.set(0, 10, 0);
         this.scene.add(pointLight);
@@ -270,8 +289,6 @@ class Game3D {
                 const edges = new THREE.EdgesGeometry(geo);
                 const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial( { color: 0x550000, linewidth: 2 } ) );
                 tile.add(line);
-
-                tile.userData = { type: 'tile', r, c };
                 boardGroup.add(tile);
             }
         }
@@ -285,11 +302,7 @@ class Game3D {
                 const geo = new THREE.SphereGeometry(0.85, 32, 16);
                 geo.applyMatrix4(new THREE.Matrix4().makeScale(1, 0.35, 1)); 
 
-                const mat = new THREE.MeshStandardMaterial({ 
-                    color: player === 1 ? COLORS.player1 : COLORS.player2,
-                    map: textures.piece, metalness: 0.2, roughness: 0.5
-                });
-                
+                const mat = new THREE.MeshStandardMaterial({ color: player === 1 ? COLORS.player1 : COLORS.player2, map: textures.piece, metalness: 0.2, roughness: 0.5 });
                 const piece = new THREE.Mesh(geo, mat);
                 piece.castShadow = true; piece.receiveShadow = true;
                 piece.userData = { type: 'piece', player, id: i, anim: null, baseY: 0 };
@@ -340,35 +353,24 @@ class Game3D {
     }
 
     createDecorations() {
-        const tabletGeo1 = new THREE.BoxGeometry(4, 0.3, 5);
         const tabletMat = new THREE.MeshStandardMaterial({ map: textures.clay, color: 0xaa8866, roughness: 0.9 });
-        const tablet1 = new THREE.Mesh(tabletGeo1, tabletMat);
-        tablet1.position.set(13, 0.15, -4);
-        tablet1.rotation.y = -Math.PI / 6;
-        tablet1.castShadow = true;
+        const tablet1 = new THREE.Mesh(new THREE.BoxGeometry(4, 0.3, 5), tabletMat);
+        tablet1.position.set(13, 0.15, -4); tablet1.rotation.y = -Math.PI / 6; tablet1.castShadow = true;
         this.scene.add(tablet1);
 
-        const tabletGeo2 = new THREE.BoxGeometry(3.5, 0.3, 4.5);
-        const tablet2 = new THREE.Mesh(tabletGeo2, tabletMat);
-        tablet2.position.set(12, 0.45, -3); 
-        tablet2.rotation.y = Math.PI / 8;
-        tablet2.castShadow = true;
+        const tablet2 = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.3, 4.5), tabletMat);
+        tablet2.position.set(12, 0.45, -3); tablet2.rotation.y = Math.PI / 8; tablet2.castShadow = true;
         this.scene.add(tablet2);
 
         const potGeo = new THREE.SphereGeometry(2.5, 32, 16);
         potGeo.applyMatrix4(new THREE.Matrix4().makeScale(1, 1.4, 1)); 
-        const potMat = new THREE.MeshStandardMaterial({ map: textures.pot, color: 0x885533, roughness: 1 });
-        const pot = new THREE.Mesh(potGeo, potMat);
-        pot.position.set(16, 1.8, -12);
-        pot.castShadow = true;
+        const pot = new THREE.Mesh(potGeo, new THREE.MeshStandardMaterial({ map: textures.pot, color: 0x885533, roughness: 1 }));
+        pot.position.set(16, 1.8, -12); pot.castShadow = true;
         this.scene.add(pot);
     }
 
     createThickGuideLine() {
-        this.guideMat = new THREE.MeshBasicMaterial({
-            color: 0xffffff, alphaMap: dashTexture, transparent: true, opacity: 0.8, depthTest: false
-        });
-        this.guideMesh = new THREE.Mesh(new THREE.BufferGeometry(), this.guideMat);
+        this.guideMesh = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({ color: 0xffffff, alphaMap: dashTexture, transparent: true, opacity: 0.8, depthTest: false }));
         this.scene.add(this.guideMesh);
         this.guideMesh.visible = false;
         this.guideMesh.renderOrder = 999; 
@@ -379,7 +381,7 @@ class Game3D {
         const entry = document.createElement('div');
         entry.className = 'log-entry';
         const time = new Date().toLocaleTimeString('en-US', { hour12: false });
-        entry.innerText = `${time}: ${msg}`;
+        entry.innerHTML = `<span style="color:#d4af37">[${time}]</span> ${msg}`;
         log.appendChild(entry);
         if(log.children.length > 3) log.removeChild(log.firstChild);
     }
@@ -388,8 +390,7 @@ class Game3D {
         if(this.isLocked || this.isCinematic) return;
         this.isLocked = true;
         
-        const btn = document.getElementById('roll-btn-container');
-        btn.classList.add('disabled');
+        document.getElementById('roll-btn-container').classList.add('disabled');
 
         let val = 0;
         const anims = [];
@@ -399,21 +400,13 @@ class Game3D {
             if(isLit) val++;
             
             anims.push(gsap.to(die.rotation, { x: Math.random()*10, y: Math.random()*10, duration: 0.6, ease: "power2.out" }));
-            anims.push(gsap.to(die.position, { 
-                y: 2, duration: 0.3, yoyo: true, repeat: 1, ease: "power1.out",
-                x: -14.5 + (Math.random()*3 - 1.5), z: (Math.random()*3 - 1.5)
-            }));
-            
-            if(isLit) {
-                anims.push(gsap.to(die.material, { emissive: 0xffffff, emissiveIntensity: 0.3, duration: 0.6 }));
-            } else {
-                anims.push(gsap.to(die.material, { emissive: 0x000000, emissiveIntensity: 0, duration: 0.6 }));
-            }
+            anims.push(gsap.to(die.position, { y: 2, duration: 0.3, yoyo: true, repeat: 1, ease: "power1.out", x: -14.5 + (Math.random()*3 - 1.5), z: (Math.random()*3 - 1.5) }));
+            anims.push(gsap.to(die.material, { emissive: isLit ? 0xffffff : 0x000000, emissiveIntensity: isLit ? 0.3 : 0, duration: 0.6 }));
         });
 
         await Promise.all(anims);
         this.rollValue = val;
-        this.logChat(`النتيجة: ${val}`);
+        this.logChat(`النتيجة: <b>${val}</b>`);
 
         if(val === 0) {
             setTimeout(() => this.switchTurn(), 1000);
@@ -464,39 +457,39 @@ class Game3D {
     }
 
     drawGuideLine(piece) {
-        const player = piece.userData.player;
-        const path = player === 1 ? PATHS.p1 : PATHS.p2;
-        const newPosIdx = (player === 1 ? this.p1Pos[piece.userData.id] : this.p2Pos[piece.userData.id]) + this.rollValue;
+        const path = piece.userData.player === 1 ? PATHS.p1 : PATHS.p2;
+        const newPosIdx = (piece.userData.player === 1 ? this.p1Pos[piece.userData.id] : this.p2Pos[piece.userData.id]) + this.rollValue;
 
-        let targetX, targetZ;
-        if (newPosIdx < 14) {
-            targetX = (path[newPosIdx][1] - 3.5) * CONFIG.cell;
-            targetZ = (path[newPosIdx][0] - 1) * CONFIG.cell;
-        } else {
-            targetX = 14; targetZ = piece.position.z;
-        }
+        let targetX = newPosIdx < 14 ? (path[newPosIdx][1] - 3.5) * CONFIG.cell : 14;
+        let targetZ = newPosIdx < 14 ? (path[newPosIdx][0] - 1) * CONFIG.cell : piece.position.z;
 
         const start = piece.position.clone();
         const end = new THREE.Vector3(targetX, 1.4, targetZ);
         const mid = start.clone().lerp(end, 0.5); mid.y += 3; 
 
-        const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
         if(this.guideMesh.geometry) this.guideMesh.geometry.dispose();
-        this.guideMesh.geometry = new THREE.TubeGeometry(curve, 30, 0.15, 8, false);
+        this.guideMesh.geometry = new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(start, mid, end), 30, 0.15, 8, false);
         this.guideMesh.visible = true;
     }
 
-    onMouseMove(event) {
-        // تحديث الإحداثيات مع دعم اللمس (Touch) والموبايل
-        let clientX = event.clientX;
-        let clientY = event.clientY;
-        if(event.touches && event.touches.length > 0) {
-            clientX = event.touches[0].clientX;
-            clientY = event.touches[0].clientY;
+    // دالة لمس الشاشات لدعم الموبايل بدقة
+    onTouchEnd(event) {
+        if (this.isCinematic || this.isLocked || this.rollValue === 0) return;
+        if (event.changedTouches.length > 0) {
+            let touch = event.changedTouches[0];
+            // مسافة التسامح للموبايل 15 بكسل للتمييز بين السحب والنقر
+            if (Math.hypot(touch.clientX - this.pointerDownPos.x, touch.clientY - this.pointerDownPos.y) > 15) return;
+            
+            this.mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+            this.mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+            this.raycastPiece();
         }
+    }
 
-        this.mouse.x = (clientX / window.innerWidth) * 2 - 1;
-        this.mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+    onMouseMove(event) {
+        let cx = event.clientX; let cy = event.clientY;
+        if(event.touches && event.touches.length > 0) { cx = event.touches[0].clientX; cy = event.touches[0].clientY; }
+        this.mouse.x = (cx / window.innerWidth) * 2 - 1; this.mouse.y = -(cy / window.innerHeight) * 2 + 1;
 
         if (this.isLocked || this.isCinematic || this.rollValue === 0 || (this.mode === 'BOT' && this.turn === 2)) {
             if(this.guideMesh) this.guideMesh.visible = false;
@@ -505,7 +498,6 @@ class Game3D {
 
         this.raycaster.setFromCamera(this.mouse, this.camera);
         const intersects = this.raycaster.intersectObjects(this.pieces);
-
         if (intersects.length > 0) {
             const obj = intersects[0].object;
             if (obj.userData.player === this.turn && this.getPossibleMoves(this.turn).includes(obj.userData.id)) {
@@ -517,14 +509,19 @@ class Game3D {
     }
 
     onPointerUp(event) {
-        if (this.isCinematic) return;
-        // زيادة التسامح في الموبايل لتمييز اللمس عن السحب (كانت 5 أصبحت 15)
-        if (Math.hypot(event.clientX - this.pointerDownPos.x, event.clientY - this.pointerDownPos.y) > 15) return; 
-        if(this.isLocked || this.rollValue === 0) return;
+        if (this.isCinematic || this.isLocked || this.rollValue === 0) return;
+        // تجاهل حدث الماوس إذا كان لمساً لتفادي التكرار
+        if (event.pointerType === 'touch') return; 
+        if (Math.hypot(event.clientX - this.pointerDownPos.x, event.clientY - this.pointerDownPos.y) > 10) return; 
 
+        this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        this.raycastPiece();
+    }
+
+    raycastPiece() {
         this.raycaster.setFromCamera(this.mouse, this.camera);
         const intersects = this.raycaster.intersectObjects(this.pieces);
-
         if(intersects.length > 0) {
             const obj = intersects[0].object;
             if(obj.userData.player === this.turn && this.getPossibleMoves(this.turn).includes(obj.userData.id)) {
@@ -563,20 +560,20 @@ class Game3D {
                     const oppPiece = this.pieces.find(p => p.userData.player !== player && p.userData.id === capturedIdx);
                     gsap.to(oppPiece.position, { x: -6 + (capturedIdx*2), y: 0.35, z: player === 1 ? -5.5 : 5.5, duration: 0.6, ease: "bounce.out" });
                     oppPiece.userData.baseY = 0.35; 
-                    this.logChat("تم أكل حجر!");
+                    this.logChat("⚔️ تم أسر حجر الخصم!");
                 }
             }
 
             const isRosette = (path[newPosIdx][0]===0&&path[newPosIdx][1]===0)||(path[newPosIdx][0]===0&&path[newPosIdx][1]===6)||(path[newPosIdx][0]===1&&path[newPosIdx][1]===3)||(path[newPosIdx][0]===2&&path[newPosIdx][1]===0)||(path[newPosIdx][0]===2&&path[newPosIdx][1]===6);
             if(isRosette) {
-                this.logChat("وقفت على الوردة! ارمِ مجدداً.");
+                this.logChat("🌸 وردة! ارمِ النرد مجدداً.");
                 this.resetForNextRoll();
                 return;
             }
         } else {
             gsap.to(pieceObj.position, { x: 14, y: 0.35, duration: 0.6 });
             pieceObj.userData.baseY = 0.35;
-            this.logChat("الحجر وصل للنهاية.");
+            this.logChat("🏁 حجر وصل بأمان!");
             this.updateScore();
         }
 
@@ -609,7 +606,11 @@ class Game3D {
     updateScore() {
         const s1 = this.p1Pos.filter(p => p === 14).length;
         const s2 = this.p2Pos.filter(p => p === 14).length;
-        if(s1 === 7 || s2 === 7) document.getElementById('status-bar').innerText = s1 === 7 ? "🎉 لقد فزت!" : "🎉 الخصم فاز!";
+        
+        document.getElementById('s1').innerText = s1;
+        document.getElementById('s2').innerText = s2;
+
+        if(s1 === 7 || s2 === 7) document.getElementById('status-bar').innerText = s1 === 7 ? "🎉 اللازورد ينتصر!" : "🎉 العقيق ينتصر!";
     }
 
     animate() {
@@ -628,11 +629,9 @@ function startCinematicIntro(mode) {
     game = new Game3D(mode, true);
 }
 
-// تعديل الدالة لضمان عمل الصوت فوراً في الموبايل
 function endCinematicIntro() {
     document.getElementById('intro-overlay').style.display = 'none';
     
-    // إجبار الصوت على العمل داخل نفس ضغطة الزر
     const audio = document.getElementById('bg-music');
     audio.src = DESIGN_ASSETS.bgMusic; 
     audio.volume = 0.4; 
@@ -640,18 +639,15 @@ function endCinematicIntro() {
     let playPromise = audio.play();
     if (playPromise !== undefined) {
         playPromise.catch(error => {
-            // حل استثنائي للأجهزة العنيدة جداً
-            console.log("الصوت محظور مؤقتاً، سيتم التشغيل مع اللمسة القادمة");
             window.addEventListener('pointerdown', () => audio.play(), { once: true });
+            window.addEventListener('touchstart', () => audio.play(), { once: true });
         });
     }
 
     game.isCinematic = false;
     game.controls.autoRotate = false;
     gsap.to(game.camera.position, {
-        x: game.defaultCamPos.x, 
-        y: game.defaultCamPos.y, 
-        z: game.defaultCamPos.z, 
+        x: game.defaultCamPos.x, y: game.defaultCamPos.y, z: game.defaultCamPos.z, 
         duration: 2, ease: "power2.inOut",
         onComplete: () => {
             document.getElementById('ui-layer').style.display = 'block';
@@ -662,7 +658,8 @@ function endCinematicIntro() {
 window.addEventListener('resize', () => {
     if(!game) return;
     game.isMobile = window.innerWidth < 768;
-    game.defaultCamPos = game.isMobile ? {x: 0, y: 22, z: 32} : {x: 0, y: 16, z: 26};
+    game.defaultCamPos = game.isMobile ? {x: 0, y: 30, z: 20} : {x: 0, y: 16, z: 26};
+    game.controls.maxPolarAngle = game.isMobile ? Math.PI / 2.8 : Math.PI / 2.6;
     
     if(!game.isCinematic) {
         game.camera.position.set(game.defaultCamPos.x, game.defaultCamPos.y, game.defaultCamPos.z);
