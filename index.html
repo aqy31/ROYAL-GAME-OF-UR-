@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أور الملكية - النسخة الشاملة (تحديث الكاميرا والخامات)</title>
+    <title>أور الملكية - النسخة النهائية</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
@@ -78,9 +78,8 @@
         .menu-box { background: rgba(10, 5, 0, 0.9); padding: 30px; border: 2px solid #d4af37; border-radius: 15px; text-align: center; max-width: 90%; box-shadow: 0 0 40px rgba(0,0,0,0.9);}
         .btn { display: block; width: 100%; max-width: 250px; padding: 15px; margin: 10px auto; background: #d4af37; color: #000; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; border-radius: 8px;}
         
-        /* 🚨 تم تعديل شاشة التعليمات لتكون شفافة تماماً مع فلتر زجاجي لتظهر حركة الكاميرا بالخلف 🚨 */
         #intro-overlay {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.1); backdrop-filter: blur(3px);
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(3px);
             display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 80;
         }
         .intro-box {
@@ -175,43 +174,44 @@
 
 <script>
 // ==========================================
-// 🎨 لوحة تحكم المصمم (الصور والألوان) 🎨
+// 🎨 لوحة تحكم المصمم (كلها PNG ومدمجة) 🎨
 // ==========================================
 const DESIGN_ASSETS = {
-    // 1. القائمة وجدران الغرفة
-    mainMenuBackground: 'https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?q=80&w=2000',
-    roomWallTexture: 'https://images.unsplash.com/photo-1518972559570-7cc1309f3229?q=80&w=1000',
+    mainMenuBackground: 'wall.png',
+    roomWallTexture: 'wall.png',
     
-    // 2. الطاولة والصحن
-    mainTable: 'https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?q=80&w=1000',
-    trayTexture: 'https://images.unsplash.com/photo-1522066841261-2679905c1e19?q=80&w=500',
+    mainTable: 'table.png',
+    trayTexture: 'tray.png',
 
-    // 3. أسطح اللوحة الخشبية (من الأعلى)
-    boardTopNormal: 'https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?q=80&w=500',
-    boardTopRosette: 'https://images.unsplash.com/photo-1588629517178-5db77ba13340?q=80&w=500',
+    // صورة واحدة للسطح بالكامل
+    boardTop: 'board-top.png',
     
-    // 4. جوانب اللوحة الخشبية
-    boardSideLeftRight: 'https://images.unsplash.com/photo-1601058268499-e52658b8ebf8?q=80&w=500', // يمين ويسار
-    boardSideTopBottom: 'https://images.unsplash.com/photo-1601058268499-e52658b8ebf8?q=80&w=500', // عليا وسفلى (أمام وخلف)
+    boardSideLeftRight: 'side-lr.png',
+    boardSideTopBottom: 'side-tb.png',
 
-    // 5. الأحجار
-    pieceBlue: 'https://images.unsplash.com/photo-1521106047354-5a5b85e819ee?q=80&w=500', 
-    pieceRed: 'https://images.unsplash.com/photo-1521106047354-5a5b85e819ee?q=80&w=500',  
+    pieceBlue: 'blue.png',
+    pieceRed: 'red.png',
 
-    // 6. النرد والرقم الطينية
-    diceTex: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Ancient_Mesopotamian_dice.jpg',
-    clayTabletTex: 'https://images.unsplash.com/photo-1616743845946-b33c0617baea?q=80&w=500', 
+    diceTex: 'dice.png',
+    clayTabletTex: 'clayTabletTex.png', 
     
-    // 7. الأصوات
     bgMusic: 'music.mp3',
     diceSound: 'dice.mp3', 
     moveSound: 'move.mp3'  
+};
+
+const COLORS = {
+    player1: 0x0a1526, 
+    player2: 0xaa0000, 
+    dice: 0x008080,    
+    boardBase: 0x880000 
 };
 // ==========================================
 
 document.getElementById('launcher').style.backgroundImage = `url('${DESIGN_ASSETS.mainMenuBackground}')`;
 document.getElementById('bg-music').src = DESIGN_ASSETS.bgMusic;
 
+// نظام الصوت
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 const audioBuffers = {};
@@ -241,8 +241,7 @@ function playSFX(id) {
 const textureLoader = new THREE.TextureLoader();
 const textures = {
     table: textureLoader.load(DESIGN_ASSETS.mainTable),
-    boardNorm: textureLoader.load(DESIGN_ASSETS.boardTopNormal),
-    boardRosette: textureLoader.load(DESIGN_ASSETS.boardTopRosette),
+    boardTop: textureLoader.load(DESIGN_ASSETS.boardTop), // تحميل الصورة الموحدة
     sideLR: textureLoader.load(DESIGN_ASSETS.boardSideLeftRight),
     sideTB: textureLoader.load(DESIGN_ASSETS.boardSideTopBottom),
     pieceBlue: textureLoader.load(DESIGN_ASSETS.pieceBlue),
@@ -317,11 +316,10 @@ class Game3D {
         this.controls.minDistance = 10;
         this.controls.maxDistance = 60; 
 
-        // تفعيل دوران الكاميرا بالخلفية عند فتح شاشة التعليمات
         if(this.isCinematic) {
             this.camera.position.set(30, 20, 30);
             this.controls.autoRotate = true;
-            this.controls.autoRotateSpeed = 2.0; // تسريع الدوران قليلاً ليكون أوضح
+            this.controls.autoRotateSpeed = 2.0; 
         } else {
             this.camera.position.set(this.defaultCamPos.x, this.defaultCamPos.y, this.defaultCamPos.z); 
         }
@@ -338,11 +336,12 @@ class Game3D {
         }
         document.body.appendChild(this.renderer.domElement);
 
-        const ambient = new THREE.AmbientLight(0xffddaa, 0.4);
+        // إضاءة قوية ودافئة لتوضيح المعالم 
+        const ambient = new THREE.AmbientLight(0xffddaa, 0.8);
         this.scene.add(ambient);
 
-        const pointLight = new THREE.PointLight(0xffa050, 1.5, 80);
-        pointLight.position.set(0, 15, 0);
+        const pointLight = new THREE.PointLight(0xffa050, 2.0, 150);
+        pointLight.position.set(0, 20, 0);
         pointLight.castShadow = true;
         pointLight.shadow.mapSize.width = 1024;
         pointLight.shadow.mapSize.height = 1024;
@@ -350,23 +349,44 @@ class Game3D {
     }
 
     createEnvironment() {
+        // 1. الطاولة الخشبية (السطح)
         textures.table.wrapS = THREE.RepeatWrapping; textures.table.wrapT = THREE.RepeatWrapping;
         textures.table.repeat.set(8, 8); 
-        // مسح الـ color: 0x5a3a22 (اللون التظليلي) ليظهر خشب الطاولة بصورته الحقيقية!
         const tableMat = new THREE.MeshStandardMaterial({ map: textures.table, color: 0xffffff, roughness: 1 });
-        const table = new THREE.Mesh(new THREE.BoxGeometry(70, 1, 50), tableMat);
-        table.position.set(0, -0.5, 0);
-        table.receiveShadow = true;
-        this.scene.add(table);
+        const tableTop = new THREE.Mesh(new THREE.BoxGeometry(70, 1, 50), tableMat);
+        tableTop.position.set(0, -0.5, 0);
+        tableTop.receiveShadow = true;
+        this.scene.add(tableTop);
 
+        // 2. أرجل الطاولة الـ 4
+        const legGeo = new THREE.BoxGeometry(3, 15, 3);
+        const legPositions = [ [-32, -8, -22], [32, -8, -22], [-32, -8, 22], [32, -8, 22] ];
+        legPositions.forEach(pos => {
+            const leg = new THREE.Mesh(legGeo, tableMat);
+            leg.position.set(...pos);
+            leg.castShadow = true;
+            leg.receiveShadow = true;
+            this.scene.add(leg);
+        });
+
+        // 3. الغرفة الطينية (الجدران والأرضية)
         textures.roomWall.wrapS = THREE.RepeatWrapping; textures.roomWall.wrapT = THREE.RepeatWrapping;
         textures.roomWall.repeat.set(4, 4); 
         const roomMat = new THREE.MeshStandardMaterial({ 
             map: textures.roomWall, color: 0xffffff, roughness: 1, side: THREE.BackSide 
         });
+        
+        // الجدران المحيطة
         const room = new THREE.Mesh(new THREE.BoxGeometry(150, 80, 150), roomMat);
-        room.position.y = 10;
+        room.position.y = 20;
         this.scene.add(room);
+
+        // الأرضية تحت الأرجل
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(150, 150), roomMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -15.5; 
+        floor.receiveShadow = true;
+        this.scene.add(floor);
     }
 
     createBoard() {
@@ -374,10 +394,9 @@ class Game3D {
         for(let r=0; r<3; r++) {
             for(let c=0; c<8; c++) {
                 if((r==0||r==2) && (c==4||c==5)) continue;
-                const isRosette = (r===0&&c===0)||(r===0&&c===6)||(r===1&&c===3)||(r===2&&c===0)||(r===2&&c===6);
                 
-                // 🚨 مسح الألوان المدمجة (color: 0xffffff) لتظهر صور الخشبة التي اخترتها كما هي 🚨
-                const topMat = new THREE.MeshStandardMaterial({ map: isRosette ? textures.boardRosette : textures.boardNorm, color: 0xffffff, roughness: 0.8 });
+                // استخدام خامة وحدة (boardTop) لكل المربعات من الأعلى
+                const topMat = new THREE.MeshStandardMaterial({ map: textures.boardTop, color: 0xffffff, roughness: 0.8 });
                 const matLR = new THREE.MeshStandardMaterial({ map: textures.sideLR, color: 0xffffff, roughness: 0.9 });
                 const matTB = new THREE.MeshStandardMaterial({ map: textures.sideTB, color: 0xffffff, roughness: 0.9 });
                 
@@ -405,7 +424,6 @@ class Game3D {
                 geo.applyMatrix4(new THREE.Matrix4().makeScale(1, 0.35, 1)); 
 
                 const pTex = player === 1 ? textures.pieceBlue : textures.pieceRed;
-                // مسح التظليل اللوني عن الأحجار لتظهر الصور الأصلية
                 const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: pTex, metalness: 0.2, roughness: 0.5 });
                 const piece = new THREE.Mesh(geo, mat);
                 piece.castShadow = true; piece.receiveShadow = true;
