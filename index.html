@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أور الملكية - نسخة الموبايل المحسنة</title>
+    <title>أور الملكية - النسخة الشاملة (أصوات مستمرة)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
@@ -29,6 +29,27 @@
         .score-num { display: block; font-size: 1.8rem; color: white; margin-top: 5px;}
         
         #status-bar { color: #d4af37; font-size: 1.8rem; text-shadow: 2px 2px 5px #000; font-weight: bold; background: rgba(0,0,0,0.5); padding: 5px 20px; border-radius: 20px;}
+
+        #settings-btn {
+            background: rgba(10, 5, 0, 0.85); border: 2px solid #d4af37; color: #d4af37; font-size: 24px; width: 45px; height: 45px; border-radius: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer; pointer-events: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.8); transition: 0.2s;
+        }
+        #settings-btn:hover { background: #d4af37; color: #000; }
+
+        #settings-menu {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 90; pointer-events: auto;
+        }
+        .settings-box {
+            background: rgba(20, 15, 10, 0.95); padding: 30px; border: 2px solid #d4af37; border-radius: 10px; text-align: center; color: white; width: 90%; max-width: 400px; box-shadow: 0 0 30px #000;
+        }
+        .settings-box h2 { color: #d4af37; border-bottom: 1px solid #d4af37; padding-bottom: 10px; margin-top: 0;}
+        .slider-container { margin: 20px 0; text-align: right;}
+        .slider-container label { display: block; margin-bottom: 10px; font-weight: bold; color: #d4af37;}
+        input[type=range] { width: 100%; accent-color: #d4af37; cursor: pointer;}
+        
+        .settings-btn { display: block; width: 100%; padding: 12px; margin: 10px 0; background: #d4af37; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; font-size: 16px;}
+        .settings-btn.danger { background: #aa0000; color: white; }
+        .settings-btn.close { background: #555; color: white; }
+        .settings-btn.music-toggle { background: #2b4c7e; color: white; border: 1px solid #4cc9f0; }
 
         #bottom-bar { position: absolute; bottom: 20px; left: 20px; right: 20px; display: flex; gap: 15px; align-items: flex-end; justify-content: flex-start; z-index: 20; }
         #roll-btn-container {
@@ -67,11 +88,20 @@
         .intro-box h2 { color: #d4af37; border-bottom: 1px solid #d4af37; padding-bottom: 10px; font-size: 22px;}
         .intro-box p { font-size: 16px; line-height: 1.6; margin: 10px 0;}
 
+        #zoom-hint {
+            position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(10, 5, 0, 0.85); color: #d4af37; border: 2px solid #d4af37;
+            padding: 20px 30px; border-radius: 15px; font-weight: bold; font-size: 1.3rem;
+            text-align: center; pointer-events: none; opacity: 0; z-index: 50; display: none;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+        }
+
         @media (max-width: 768px) {
-            #top-ui { padding: 0 10px; top: 10px; }
+            #top-ui { padding: 10px; top: 5px; }
             .score-box { padding: 5px 10px; font-size: 12px; }
             .score-num { font-size: 1.4rem; margin-top: 2px;}
             #status-bar { font-size: 1.2rem; padding: 5px 10px;}
+            #settings-btn { width: 40px; height: 40px; font-size: 20px;}
             
             #bottom-bar { bottom: 15px; left: 10px; right: 10px; gap: 10px; }
             #roll-btn-container { width: 90px; height: 75px; }
@@ -79,18 +109,23 @@
             .roll-text { font-size: 13px; }
             
             #chat-log { width: calc(100% - 100px); height: 75px; font-size: 11px; padding: 5px 8px; }
+            
+            #zoom-hint { width: 80%; padding: 15px 10px; font-size: 1.1rem; }
         }
     </style>
 </head>
 <body>
 
 <audio id="bg-music" loop></audio>
+<audio id="sfx-dice"></audio>
+<audio id="sfx-move"></audio>
 
 <div id="ui-layer">
     <div id="top-ui">
         <div class="score-box p1">اللازورد <span class="score-num" id="s1">0</span></div>
         <div id="status-bar">دورك للعب</div>
         <div class="score-box p2">العقيق <span class="score-num" id="s2">0</span></div>
+        <div id="settings-btn" onclick="openSettings()">☰</div>
     </div>
     
     <div id="bottom-bar">
@@ -101,6 +136,25 @@
         <div id="chat-log">
             <div class="log-entry">🟢 اللعبة جاهزة، بالتوفيق!</div>
         </div>
+    </div>
+
+    <div id="zoom-hint">
+        <div style="font-size: 35px; margin-bottom: 10px;">🔍</div>
+        يمكنك تكبير وتصغير وتدوير الشاشة
+    </div>
+</div>
+
+<div id="settings-menu">
+    <div class="settings-box">
+        <h2>إعدادات اللعبة</h2>
+        <div class="slider-container">
+            <label>مستوى موسيقى الخلفية</label>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.4" oninput="updateMusicVolume(this.value)">
+        </div>
+        <button id="mute-btn" class="settings-btn music-toggle" onclick="toggleMusic()">إيقاف الموسيقى 🔊</button>
+        <button class="settings-btn close" onclick="closeSettings()">إكمال اللعب</button>
+        <button class="settings-btn" onclick="restartGame()">إعادة اللعبة 🔄</button>
+        <button class="settings-btn danger" onclick="exitGame()">الخروج للقائمة 🚪</button>
     </div>
 </div>
 
@@ -115,7 +169,7 @@
 <div id="intro-overlay">
     <div class="intro-box">
         <h2>تعليمات اللعبة</h2>
-        <p>🎲 <b>النرد:</b> ارمِ النرد لتحصل على خطوات.</p>
+        <p>🎲 <b>النرد:</b> ارمِ النرد لتحصل على خطوات (0 إلى 4).</p>
         <p>👆 <b>التحريك:</b> اضغط على الحجر مرة لرؤية المسار، ومرة ثانية لتأكيد الحركة.</p>
         <p>🌸 <b>الوردة:</b> قف على الوردة لتحصل على رمية إضافية وتكون في أمان.</p>
         <button class="btn" onclick="endCinematicIntro()" style="margin-top: 20px;">ابدأ اللعب الآن</button>
@@ -137,7 +191,11 @@ const DESIGN_ASSETS = {
     trayTexture: 'https://images.unsplash.com/photo-1522066841261-2679905c1e19?q=80&w=500',
     clayTablet: 'https://images.unsplash.com/photo-1616743845946-b33c0617baea?q=80&w=500', 
     pottery: 'https://images.unsplash.com/photo-1610705462521-1dc53460df76?q=80&w=500',
-    bgMusic: 'music.mp3'
+    roomWallTexture: 'https://images.unsplash.com/photo-1518972559570-7cc1309f3229?q=80&w=1000',
+    
+    bgMusic: 'music.mp3',
+    diceSound: 'dice.mp3', 
+    moveSound: 'move.mp3'  
 };
 
 const COLORS = {
@@ -146,6 +204,15 @@ const COLORS = {
 // ==========================================
 
 document.getElementById('launcher').style.backgroundImage = `url('${DESIGN_ASSETS.mainMenuBackground}')`;
+
+// تعيين الروابط للأصوات
+const bgMusicEl = document.getElementById('bg-music');
+const sfxDiceEl = document.getElementById('sfx-dice');
+const sfxMoveEl = document.getElementById('sfx-move');
+
+bgMusicEl.src = DESIGN_ASSETS.bgMusic;
+sfxDiceEl.src = DESIGN_ASSETS.diceSound;
+sfxMoveEl.src = DESIGN_ASSETS.moveSound;
 
 const textureLoader = new THREE.TextureLoader();
 const textures = {
@@ -157,7 +224,8 @@ const textures = {
     dice: textureLoader.load(DESIGN_ASSETS.diceTexture),
     tray: textureLoader.load(DESIGN_ASSETS.trayTexture),
     clay: textureLoader.load(DESIGN_ASSETS.clayTablet),
-    pot: textureLoader.load(DESIGN_ASSETS.pottery)
+    pot: textureLoader.load(DESIGN_ASSETS.pottery),
+    roomWall: textureLoader.load(DESIGN_ASSETS.roomWallTexture)
 };
 
 const canvas = document.createElement('canvas');
@@ -176,7 +244,8 @@ const PATHS = {
 class Game3D {
     constructor(mode, isCinematic = false) {
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color('#050403'); 
+        this.scene.background = new THREE.Color('#3a2411'); 
+        this.scene.fog = new THREE.FogExp2('#3a2411', 0.015);
         
         this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -198,8 +267,6 @@ class Game3D {
         this.mode = mode;
         this.isCinematic = isCinematic;
         this.pointerDownPos = new THREE.Vector2();
-        
-        // متغير جديد لمعرفة الحجر المحدد (نظام النقرتين)
         this.selectedPieceId = null;
 
         this.initScene();
@@ -220,10 +287,10 @@ class Game3D {
         window.addEventListener('touchend', (e) => this.onTouchEnd(e), {passive: false});
 
         this.isMobile = window.innerWidth < 768;
-        this.defaultCamPos = this.isMobile ? {x: 0, y: 30, z: 20} : {x: 0, y: 16, z: 26};
+        this.defaultCamPos = this.isMobile ? {x: -28, y: 24, z: 12} : {x: -25, y: 16, z: 15};
         this.controls.maxPolarAngle = this.isMobile ? Math.PI / 2.8 : Math.PI / 2.6;
         this.controls.minDistance = 10;
-        this.controls.maxDistance = 50; 
+        this.controls.maxDistance = 60; 
 
         if(this.isCinematic) {
             this.camera.position.set(30, 20, 30);
@@ -239,18 +306,20 @@ class Game3D {
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        
+        while (document.body.querySelector('canvas')) {
+            document.body.removeChild(document.body.querySelector('canvas'));
+        }
         document.body.appendChild(this.renderer.domElement);
 
-        const ambient = new THREE.AmbientLight(0xffeedd, 0.7);
+        const ambient = new THREE.AmbientLight(0xffddaa, 0.4);
         this.scene.add(ambient);
-        const sun = new THREE.DirectionalLight(0xffddaa, 1.2);
-        sun.position.set(2, 15, 10); 
-        sun.castShadow = true;
-        sun.shadow.mapSize.width = 1024;
-        sun.shadow.mapSize.height = 1024;
-        this.scene.add(sun);
-        const pointLight = new THREE.PointLight(0xffaa55, 0.8, 50);
-        pointLight.position.set(0, 10, 0);
+
+        const pointLight = new THREE.PointLight(0xffa050, 1.5, 80);
+        pointLight.position.set(0, 15, 0);
+        pointLight.castShadow = true;
+        pointLight.shadow.mapSize.width = 1024;
+        pointLight.shadow.mapSize.height = 1024;
         this.scene.add(pointLight);
     }
 
@@ -263,6 +332,16 @@ class Game3D {
         table.position.set(0, -0.5, 0);
         table.receiveShadow = true;
         this.scene.add(table);
+
+        textures.roomWall.wrapS = THREE.RepeatWrapping; textures.roomWall.wrapT = THREE.RepeatWrapping;
+        textures.roomWall.repeat.set(4, 4); 
+        const roomGeo = new THREE.BoxGeometry(150, 80, 150);
+        const roomMat = new THREE.MeshStandardMaterial({ 
+            map: textures.roomWall, color: 0x8b5a2b, roughness: 1, side: THREE.BackSide 
+        });
+        const room = new THREE.Mesh(roomGeo, roomMat);
+        room.position.y = 10;
+        this.scene.add(room);
     }
 
     createBoard() {
@@ -381,13 +460,27 @@ class Game3D {
         if(log.children.length > 3) log.removeChild(log.firstChild);
     }
 
+    playSound(id) {
+        const audio = document.getElementById(id);
+        if (audio) {
+            audio.currentTime = 0; 
+            let playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => { /* منع الأخطاء الوهمية للمتصفح */ });
+            }
+        }
+    }
+
     async rollDice() {
         if(this.isLocked || this.isCinematic) return;
         this.isLocked = true;
-        this.selectedPieceId = null; // إعادة تعيين التحديد مع كل رمية جديدة
+        this.selectedPieceId = null; 
         if(this.guideMesh) this.guideMesh.visible = false;
         
         document.getElementById('roll-btn-container').classList.add('disabled');
+        
+        // تشغيل صوت النرد لك وللكمبيوتر باستمرار
+        this.playSound('sfx-dice');
 
         let val = 0;
         const anims = [];
@@ -483,7 +576,6 @@ class Game3D {
     }
 
     onMouseMove(event) {
-        // بالكمبيوتر، إذا لم يكن هناك حجر محدد، أظهر الخط كمعاينة (Hover)
         if (this.selectedPieceId !== null || this.isMobile) return; 
 
         let cx = event.clientX; let cy = event.clientY;
@@ -516,7 +608,6 @@ class Game3D {
         this.raycastPiece();
     }
 
-    // هنا برمجة نظام "النقرتين"
     raycastPiece() {
         this.raycaster.setFromCamera(this.mouse, this.camera);
         const intersects = this.raycaster.intersectObjects(this.pieces);
@@ -524,24 +615,18 @@ class Game3D {
         if(intersects.length > 0) {
             const obj = intersects[0].object;
             if(obj.userData.player === this.turn && this.getPossibleMoves(this.turn).includes(obj.userData.id)) {
-                
-                // إذا ضغطنا على نفس الحجر المحدد مسبقاً -> حرك الحجر
                 if (this.selectedPieceId === obj.userData.id) {
                     this.movePiece(obj.userData.id, this.turn);
                     this.selectedPieceId = null;
-                } 
-                // إذا ضغطنا على حجر للمرة الأولى -> حدده وارسم الخط
-                else {
+                } else {
                     this.selectedPieceId = obj.userData.id;
                     this.drawGuideLine(obj);
                 }
             } else {
-                // إذا ضغطنا على حجر غير متاح
                 this.selectedPieceId = null;
                 if(this.guideMesh) this.guideMesh.visible = false;
             }
         } else {
-            // إذا ضغطنا على مساحة فارغة في الشاشة، نلغي التحديد
             this.selectedPieceId = null;
             if(this.guideMesh) this.guideMesh.visible = false;
         }
@@ -551,6 +636,9 @@ class Game3D {
         this.isLocked = true;
         this.guideMesh.visible = false; 
         this.clearHighlights(); 
+        
+        // تشغيل صوت حركة الحجر في نفس لحظة القفز الأولى
+        this.playSound('sfx-move');
         
         const my = player === 1 ? this.p1Pos : this.p2Pos;
         const opp = player === 1 ? this.p2Pos : this.p1Pos;
@@ -640,43 +728,119 @@ class Game3D {
 }
 
 let game;
+let savedMode = 'PVP';
+let isMusicMuted = false;
 
 function startCinematicIntro(mode) {
+    savedMode = mode;
     document.getElementById('launcher').style.display = 'none';
     document.getElementById('intro-overlay').style.display = 'flex';
     game = new Game3D(mode, true);
 }
 
+function showZoomHint() {
+    const hint = document.getElementById('zoom-hint');
+    hint.style.display = 'block';
+    gsap.to(hint, {opacity: 1, duration: 0.5});
+    setTimeout(() => {
+        gsap.to(hint, {opacity: 0, duration: 0.5, onComplete: () => hint.style.display = 'none'});
+    }, 4000);
+}
+
 function endCinematicIntro() {
     document.getElementById('intro-overlay').style.display = 'none';
     
-    const audio = document.getElementById('bg-music');
-    audio.src = DESIGN_ASSETS.bgMusic; 
-    audio.volume = 0.4; 
+    // فتح قفل المتصفح لجميع الأصوات بمجرد التفاعل
+    const sfxDice = document.getElementById('sfx-dice');
+    const sfxMove = document.getElementById('sfx-move');
+    const bgMusic = document.getElementById('bg-music');
     
-    let playPromise = audio.play();
-    if (playPromise !== undefined) {
-        playPromise.catch(error => {
-            window.addEventListener('pointerdown', () => audio.play(), { once: true });
-            window.addEventListener('touchstart', () => audio.play(), { once: true });
+    // خدعة تقنية: تشغيل وكتم فوري للمؤثرات للسماح لها بالعمل لاحقاً بدون تفاعل (للبوت)
+    sfxDice.muted = true; sfxDice.play().then(() => { sfxDice.pause(); sfxDice.muted = false; }).catch(e=>{});
+    sfxMove.muted = true; sfxMove.play().then(() => { sfxMove.pause(); sfxMove.muted = false; }).catch(e=>{});
+    
+    if(!isMusicMuted) {
+        bgMusic.volume = parseFloat(document.getElementById('volume-slider').value); 
+        bgMusic.play().catch(e => {
+            window.addEventListener('pointerdown', () => bgMusic.play(), { once: true });
         });
     }
 
     game.isCinematic = false;
     game.controls.autoRotate = false;
-    gsap.to(game.camera.position, {
-        x: game.defaultCamPos.x, y: game.defaultCamPos.y, z: game.defaultCamPos.z, 
-        duration: 2, ease: "power2.inOut",
+    
+    let tl = gsap.timeline({
         onComplete: () => {
             document.getElementById('ui-layer').style.display = 'block';
+            showZoomHint(); 
         }
     });
+
+    tl.to(game.camera.position, {
+        x: game.defaultCamPos.x, y: game.defaultCamPos.y, z: game.defaultCamPos.z, 
+        duration: 1.5, ease: "power2.inOut"
+    })
+    .to(game.camera.position, {
+        x: game.defaultCamPos.x * 0.7, y: game.defaultCamPos.y * 0.7, z: game.defaultCamPos.z * 0.7,
+        duration: 0.8, ease: "power1.inOut", delay: 0.2
+    })
+    .to(game.camera.position, {
+        x: game.defaultCamPos.x, y: game.defaultCamPos.y, z: game.defaultCamPos.z,
+        duration: 0.8, ease: "power1.inOut"
+    });
+}
+
+function openSettings() { document.getElementById('settings-menu').style.display = 'flex'; }
+function closeSettings() { document.getElementById('settings-menu').style.display = 'none'; }
+
+// هذا الشريط الآن يتحكم بصوت الموسيقى فقط بشكل فوري!
+function updateMusicVolume(val) {
+    document.getElementById('bg-music').volume = parseFloat(val);
+}
+
+// دالة كتم/تشغيل موسيقى الخلفية
+function toggleMusic() {
+    const bgMusic = document.getElementById('bg-music');
+    const muteBtn = document.getElementById('mute-btn');
+    
+    isMusicMuted = !isMusicMuted;
+    bgMusic.muted = isMusicMuted;
+    
+    if(isMusicMuted) {
+        muteBtn.innerText = "تشغيل الموسيقى 🔇";
+        muteBtn.className = "settings-btn danger";
+    } else {
+        muteBtn.innerText = "إيقاف الموسيقى 🔊";
+        muteBtn.className = "settings-btn music-toggle";
+    }
+}
+
+function restartGame() {
+    closeSettings();
+    document.getElementById('ui-layer').style.display = 'none';
+    game = new Game3D(savedMode, true); 
+    endCinematicIntro(); 
+    document.getElementById('s1').innerText = "0";
+    document.getElementById('s2').innerText = "0";
+}
+
+function exitGame() {
+    closeSettings();
+    document.getElementById('ui-layer').style.display = 'none';
+    document.getElementById('launcher').style.display = 'flex';
+    document.getElementById('bg-music').pause(); 
+    while (document.body.querySelector('canvas')) {
+        document.body.removeChild(document.body.querySelector('canvas'));
+    }
+    game = null;
+    document.getElementById('s1').innerText = "0";
+    document.getElementById('s2').innerText = "0";
 }
 
 window.addEventListener('resize', () => {
     if(!game) return;
     game.isMobile = window.innerWidth < 768;
-    game.defaultCamPos = game.isMobile ? {x: 0, y: 30, z: 20} : {x: 0, y: 16, z: 26};
+    game.defaultCamPos = game.isMobile ? {x: -28, y: 24, z: 12} : {x: -25, y: 16, z: 15};
     game.controls.maxPolarAngle = game.isMobile ? Math.PI / 2.8 : Math.PI / 2.6;
     
     if(!game.isCinematic) {
