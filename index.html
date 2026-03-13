@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أور الملكية - النسخة النهائية</title>
+    <title>أور الملكية - النسخة المبسطة</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
@@ -174,27 +174,23 @@
 
 <script>
 // ==========================================
-// 🎨 لوحة تحكم المصمم (كلها PNG ومدمجة) 🎨
+// 🎨 لوحة تحكم المصمم المبسطة (كلها PNG) 🎨
 // ==========================================
 const DESIGN_ASSETS = {
+    // صورة وحدة لكل خشبة اللعبة
+    boardTex: 'board.png',
+    
+    // باقي الصور
     mainMenuBackground: 'wall.png',
     roomWallTexture: 'wall.png',
-    
     mainTable: 'table.png',
     trayTexture: 'tray.png',
-
-    // صورة واحدة للسطح بالكامل
-    boardTop: 'board-top.png',
-    
-    boardSideLeftRight: 'side-lr.png',
-    boardSideTopBottom: 'side-tb.png',
-
     pieceBlue: 'blue.png',
     pieceRed: 'red.png',
-
     diceTex: 'dice.png',
-    clayTabletTex: 'clayTabletTex.png', 
+    clayTabletTex: 'clay.png', 
     
+    // الأصوات
     bgMusic: 'music.mp3',
     diceSound: 'dice.mp3', 
     moveSound: 'move.mp3'  
@@ -240,10 +236,8 @@ function playSFX(id) {
 
 const textureLoader = new THREE.TextureLoader();
 const textures = {
+    boardTex: textureLoader.load(DESIGN_ASSETS.boardTex),
     table: textureLoader.load(DESIGN_ASSETS.mainTable),
-    boardTop: textureLoader.load(DESIGN_ASSETS.boardTop), // تحميل الصورة الموحدة
-    sideLR: textureLoader.load(DESIGN_ASSETS.boardSideLeftRight),
-    sideTB: textureLoader.load(DESIGN_ASSETS.boardSideTopBottom),
     pieceBlue: textureLoader.load(DESIGN_ASSETS.pieceBlue),
     pieceRed: textureLoader.load(DESIGN_ASSETS.pieceRed),
     dice: textureLoader.load(DESIGN_ASSETS.diceTex),
@@ -336,7 +330,6 @@ class Game3D {
         }
         document.body.appendChild(this.renderer.domElement);
 
-        // إضاءة قوية ودافئة لتوضيح المعالم 
         const ambient = new THREE.AmbientLight(0xffddaa, 0.8);
         this.scene.add(ambient);
 
@@ -349,7 +342,6 @@ class Game3D {
     }
 
     createEnvironment() {
-        // 1. الطاولة الخشبية (السطح)
         textures.table.wrapS = THREE.RepeatWrapping; textures.table.wrapT = THREE.RepeatWrapping;
         textures.table.repeat.set(8, 8); 
         const tableMat = new THREE.MeshStandardMaterial({ map: textures.table, color: 0xffffff, roughness: 1 });
@@ -358,7 +350,6 @@ class Game3D {
         tableTop.receiveShadow = true;
         this.scene.add(tableTop);
 
-        // 2. أرجل الطاولة الـ 4
         const legGeo = new THREE.BoxGeometry(3, 15, 3);
         const legPositions = [ [-32, -8, -22], [32, -8, -22], [-32, -8, 22], [32, -8, 22] ];
         legPositions.forEach(pos => {
@@ -369,19 +360,16 @@ class Game3D {
             this.scene.add(leg);
         });
 
-        // 3. الغرفة الطينية (الجدران والأرضية)
         textures.roomWall.wrapS = THREE.RepeatWrapping; textures.roomWall.wrapT = THREE.RepeatWrapping;
         textures.roomWall.repeat.set(4, 4); 
         const roomMat = new THREE.MeshStandardMaterial({ 
             map: textures.roomWall, color: 0xffffff, roughness: 1, side: THREE.BackSide 
         });
         
-        // الجدران المحيطة
         const room = new THREE.Mesh(new THREE.BoxGeometry(150, 80, 150), roomMat);
         room.position.y = 20;
         this.scene.add(room);
 
-        // الأرضية تحت الأرجل
         const floor = new THREE.Mesh(new THREE.PlaneGeometry(150, 150), roomMat);
         floor.rotation.x = -Math.PI / 2;
         floor.position.y = -15.5; 
@@ -391,17 +379,14 @@ class Game3D {
 
     createBoard() {
         const boardGroup = new THREE.Group();
+        // 🚨 هنا تم توحيد الخامة لجميع الجوانب بصورة وحدة (boardTex) 🚨
+        const unifiedBoardMat = new THREE.MeshStandardMaterial({ map: textures.boardTex, color: 0xffffff, roughness: 0.8 });
+        const materials = [unifiedBoardMat, unifiedBoardMat, unifiedBoardMat, unifiedBoardMat, unifiedBoardMat, unifiedBoardMat];
+
         for(let r=0; r<3; r++) {
             for(let c=0; c<8; c++) {
                 if((r==0||r==2) && (c==4||c==5)) continue;
                 
-                // استخدام خامة وحدة (boardTop) لكل المربعات من الأعلى
-                const topMat = new THREE.MeshStandardMaterial({ map: textures.boardTop, color: 0xffffff, roughness: 0.8 });
-                const matLR = new THREE.MeshStandardMaterial({ map: textures.sideLR, color: 0xffffff, roughness: 0.9 });
-                const matTB = new THREE.MeshStandardMaterial({ map: textures.sideTB, color: 0xffffff, roughness: 0.9 });
-                
-                const materials = [matLR, matLR, topMat, matTB, matTB, matTB];
-
                 const geo = new THREE.BoxGeometry(CONFIG.cell, 1.2, CONFIG.cell); 
                 const tile = new THREE.Mesh(geo, materials);
                 tile.position.set((c - 3.5) * CONFIG.cell, 0.6, (r - 1) * CONFIG.cell);
