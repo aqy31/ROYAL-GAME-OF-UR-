@@ -177,10 +177,7 @@
 // 🎨 لوحة تحكم المصمم المبسطة (كلها PNG) 🎨
 // ==========================================
 const DESIGN_ASSETS = {
-    // صورة وحدة لكل خشبة اللعبة
     boardTex: 'board.png',
-    
-    // باقي الصور
     mainMenuBackground: 'wall.png',
     roomWallTexture: 'wall.png',
     mainTable: 'table.png',
@@ -189,8 +186,6 @@ const DESIGN_ASSETS = {
     pieceRed: 'red.png',
     diceTex: 'dice.png',
     clayTabletTex: 'clay.png', 
-    
-    // الأصوات
     bgMusic: 'music.mp3',
     diceSound: 'dice.mp3', 
     moveSound: 'move.mp3'  
@@ -207,7 +202,6 @@ const COLORS = {
 document.getElementById('launcher').style.backgroundImage = `url('${DESIGN_ASSETS.mainMenuBackground}')`;
 document.getElementById('bg-music').src = DESIGN_ASSETS.bgMusic;
 
-// نظام الصوت
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 const audioBuffers = {};
@@ -330,23 +324,24 @@ class Game3D {
         }
         document.body.appendChild(this.renderer.domElement);
 
-        // إضاءة محيطية بلون طيني دافئ
-        const ambient = new THREE.AmbientLight(0xffecd4, 0.6); 
-        this.scene.add(ambient);
+        // تعديل الإضاءة لتكون احترافية وواقعية أكثر
+        const hemiLight = new THREE.HemisphereLight(0xfff0dd, 0x8b5a2b, 0.5); // دمج لون السماء الفاتح مع أرضية طينية
+        this.scene.add(hemiLight);
 
-        // إضاءة شمس مائلة تعطي ظلالاً جميلة للقطع والغرفة
-        const dirLight = new THREE.DirectionalLight(0xffa050, 1.5);
-        dirLight.position.set(15, 25, -15);
+        const dirLight = new THREE.DirectionalLight(0xffa050, 1.2); // شمس مائلة قوية للظلال
+        dirLight.position.set(20, 30, -15);
         dirLight.castShadow = true;
         dirLight.shadow.mapSize.width = 2048;
         dirLight.shadow.mapSize.height = 2048;
-        dirLight.shadow.bias = -0.001; 
+        dirLight.shadow.bias = -0.0005; 
         this.scene.add(dirLight);
 
-        // ضوء خفيف في المنتصف لتعزيز لون الطين
-        const pointLight = new THREE.PointLight(0xff8833, 0.8, 100);
-        pointLight.position.set(0, 10, 0);
-        this.scene.add(pointLight);
+        const spotLight = new THREE.SpotLight(0xffddaa, 1.5); // كشاف ناعم يركز على اللعبة لإبراز تفاصيلها
+        spotLight.position.set(0, 20, 0);
+        spotLight.angle = Math.PI / 3;
+        spotLight.penumbra = 0.8;
+        spotLight.castShadow = true;
+        this.scene.add(spotLight);
     }
 
     createEnvironment() {
@@ -368,7 +363,6 @@ class Game3D {
             this.scene.add(leg);
         });
 
-        // خامة الغرفة مع لون الطين
         textures.roomWall.wrapS = THREE.RepeatWrapping; textures.roomWall.wrapT = THREE.RepeatWrapping;
         textures.roomWall.repeat.set(6, 6); 
         const roomMat = new THREE.MeshStandardMaterial({ 
@@ -388,24 +382,69 @@ class Game3D {
 
     createBoard() {
         const boardGroup = new THREE.Group();
-        const unifiedBoardMat = new THREE.MeshStandardMaterial({ map: textures.boardTex, color: 0xffffff, roughness: 0.8 });
-        const materials = [unifiedBoardMat, unifiedBoardMat, unifiedBoardMat, unifiedBoardMat, unifiedBoardMat, unifiedBoardMat];
+        
+        // خامة سفلية بلون الطين/الخشب الداكن لحواف المكعبات
+        const baseMat = new THREE.MeshStandardMaterial({ color: 0x8a5a3a, roughness: 0.9 }); 
 
+        // بناء مجسمات اللعبة السفلية (كأساس فقط)
         for(let r=0; r<3; r++) {
             for(let c=0; c<8; c++) {
                 if((r==0||r==2) && (c==4||c==5)) continue;
                 
                 const geo = new THREE.BoxGeometry(CONFIG.cell, 1.2, CONFIG.cell); 
-                const tile = new THREE.Mesh(geo, materials);
+                const tile = new THREE.Mesh(geo, baseMat);
                 tile.position.set((c - 3.5) * CONFIG.cell, 0.6, (r - 1) * CONFIG.cell);
                 tile.receiveShadow = true; tile.castShadow = true;
                 
+                // خطوط بسيطة للتحديد الجانبي
                 const edges = new THREE.EdgesGeometry(geo);
-                const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial( { color: 0x550000, linewidth: 2 } ) );
+                const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x4a2a1a, linewidth: 1 }));
                 tile.add(line);
+                
                 boardGroup.add(tile);
             }
         }
+
+        // بناء الطبقة العلوية التي ستحمل الصورة كاملة كقطعة واحدة
+        const c = CONFIG.cell;
+        const shape = new THREE.Shape();
+        
+        // رسم حدود رقعة اللعبة بالكامل
+        shape.moveTo(-4 * c, -1.5 * c);
+        shape.lineTo( 0 * c, -1.5 * c);
+        shape.lineTo( 0 * c, -0.5 * c);
+        shape.lineTo( 2 * c, -0.5 * c);
+        shape.lineTo( 2 * c, -1.5 * c);
+        shape.lineTo( 4 * c, -1.5 * c);
+        shape.lineTo( 4 * c,  1.5 * c);
+        shape.lineTo( 2 * c,  1.5 * c);
+        shape.lineTo( 2 * c,  0.5 * c);
+        shape.lineTo( 0 * c,  0.5 * c);
+        shape.lineTo( 0 * c,  1.5 * c);
+        shape.lineTo(-4 * c,  1.5 * c);
+        shape.lineTo(-4 * c, -1.5 * c);
+
+        const topGeo = new THREE.ShapeGeometry(shape);
+        
+        // حساب إحداثيات الصورة لتغطي كامل مساحة الشكل بشكل مثالي
+        topGeo.computeBoundingBox();
+        const bbox = topGeo.boundingBox;
+        const uvAttribute = topGeo.attributes.uv;
+        for (let i = 0; i < uvAttribute.count; i++) {
+            const u = (topGeo.attributes.position.getX(i) - bbox.min.x) / (bbox.max.x - bbox.min.x);
+            const v = (topGeo.attributes.position.getY(i) - bbox.min.y) / (bbox.max.y - bbox.min.y);
+            uvAttribute.setXY(i, u, v);
+        }
+
+        // إكساء الطبقة الرقيقة بالصورة المطلوبة
+        const topMat = new THREE.MeshStandardMaterial({ map: textures.boardTex, roughness: 0.5, color: 0xffffff });
+        const topMesh = new THREE.Mesh(topGeo, topMat);
+        
+        topMesh.rotation.x = -Math.PI / 2;
+        topMesh.position.y = 1.205; // نضعها أعلى المكعبات بشعرة واحدة لتعطي شكل الغطاء
+        topMesh.receiveShadow = true;
+        boardGroup.add(topMesh);
+
         this.scene.add(boardGroup);
         this.initPieces();
     }
@@ -413,8 +452,8 @@ class Game3D {
     initPieces() {
         const createSet = (player) => {
             for(let i=0; i<7; i++) {
-                // استخدام شكل أسطواني لمنع تشوه الصورة
-                const geo = new THREE.CylinderGeometry(0.85, 0.85, 0.35, 32);
+                // تعديل عرض الأحجار وجعلها متعرجة كأنها منحوتة وليست ناعمة (10 أضلاع بدلاً من دائرية)
+                const geo = new THREE.CylinderGeometry(0.72, 0.72, 0.35, 10);
 
                 const pTex = player === 1 ? textures.pieceBlue : textures.pieceRed;
                 const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: pTex, metalness: 0.2, roughness: 0.5 });
@@ -431,7 +470,7 @@ class Game3D {
                     dotGeo.applyMatrix4(new THREE.Matrix4().makeScale(1, 0.3, 1));
                     const dotMat = new THREE.MeshBasicMaterial({color: 0xffffff});
                     const dot = new THREE.Mesh(dotGeo, dotMat);
-                    dot.position.y = 0.18; // تم التعديل لتناسب السطح المستوي
+                    dot.position.y = 0.18; 
                     piece.add(dot);
                 }
                 this.scene.add(piece);
@@ -471,7 +510,8 @@ class Game3D {
         const tabletMat = new THREE.MeshStandardMaterial({ map: textures.clay, color: 0xffffff, roughness: 0.9 });
         
         const shape = new THREE.Shape();
-        const w = 1.8, l = 2.5, r = 0.4;
+        // زيادة نصف القطر r لتصبح الزوايا محدبة ومقوسة بشكل أوضح
+        const w = 1.6, l = 2.4, r = 0.8; 
         shape.moveTo(-w + r, -l);
         shape.lineTo(w - r, -l);
         shape.quadraticCurveTo(w, -l, w, -l + r);
@@ -482,7 +522,8 @@ class Game3D {
         shape.lineTo(-w, -l + r);
         shape.quadraticCurveTo(-w, -l, -w + r, -l);
 
-        const extrudeSettings = { depth: 0.3, bevelEnabled: true, bevelSegments: 4, steps: 1, bevelSize: 0.2, bevelThickness: 0.2 };
+        // تقليل العمق ليكون مسطحاً أكثر وزيادة تفاصيل الحواف (Bevel)
+        const extrudeSettings = { depth: 0.12, bevelEnabled: true, bevelSegments: 10, steps: 1, bevelSize: 0.4, bevelThickness: 0.25 };
         const tabletGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
         tabletGeo.rotateX(Math.PI / 2); 
 
