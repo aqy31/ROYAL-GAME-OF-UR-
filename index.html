@@ -18,20 +18,18 @@
         #ui-layer { position: absolute; inset: 0; pointer-events: none; z-index: 10; display: none; } 
         .interactive { pointer-events: auto; }
         
-        /* --- واجهة النتيجة العلوية الجديدة --- */
         #top-ui {
             position: absolute; top: 15px; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; box-sizing: border-box; pointer-events: none; z-index: 20;
         }
         .score-box {
             background: rgba(10, 5, 0, 0.85); border: 2px solid #d4af37; padding: 10px 20px; border-radius: 10px; color: white; font-weight: bold; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.8); backdrop-filter: blur(5px);
         }
-        .score-box.p1 { border-color: #4cc9f0; color: #4cc9f0; } /* أزرق */
-        .score-box.p2 { border-color: #f72585; color: #f72585; } /* أحمر */
+        .score-box.p1 { border-color: #4cc9f0; color: #4cc9f0; } 
+        .score-box.p2 { border-color: #f72585; color: #f72585; } 
         .score-num { display: block; font-size: 1.8rem; color: white; margin-top: 5px;}
         
         #status-bar { color: #d4af37; font-size: 1.8rem; text-shadow: 2px 2px 5px #000; font-weight: bold; background: rgba(0,0,0,0.5); padding: 5px 20px; border-radius: 20px;}
 
-        /* --- الواجهة السفلية (النرد والحركات) --- */
         #bottom-bar { position: absolute; bottom: 20px; left: 20px; right: 20px; display: flex; gap: 15px; align-items: flex-end; justify-content: flex-start; z-index: 20; }
         #roll-btn-container {
             background: linear-gradient(135deg, #d4af37, #8a6a1c); border: 2px solid #000; border-radius: 12px; width: 110px; height: 85px;
@@ -52,7 +50,6 @@
         }
         .log-entry { margin-bottom: 3px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px;}
 
-        /* --- القوائم --- */
         #launcher {
             position: fixed; inset: 0; background-color: #111; background-size: cover; background-position: center;
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
@@ -70,7 +67,6 @@
         .intro-box h2 { color: #d4af37; border-bottom: 1px solid #d4af37; padding-bottom: 10px; font-size: 22px;}
         .intro-box p { font-size: 16px; line-height: 1.6; margin: 10px 0;}
 
-        /* --- تحسينات الشاشات الصغيرة (Responsive) --- */
         @media (max-width: 768px) {
             #top-ui { padding: 0 10px; top: 10px; }
             .score-box { padding: 5px 10px; font-size: 12px; }
@@ -119,8 +115,8 @@
 <div id="intro-overlay">
     <div class="intro-box">
         <h2>تعليمات اللعبة</h2>
-        <p>🎲 <b>النرد:</b> ارمِ النرد لتحصل على خطوات (0 إلى 4).</p>
-        <p>⚔️ <b>القتال:</b> حرك حجرك للمسار المشترك وكل حجر الخصم لترجعه للبداية.</p>
+        <p>🎲 <b>النرد:</b> ارمِ النرد لتحصل على خطوات.</p>
+        <p>👆 <b>التحريك:</b> اضغط على الحجر مرة لرؤية المسار، ومرة ثانية لتأكيد الحركة.</p>
         <p>🌸 <b>الوردة:</b> قف على الوردة لتحصل على رمية إضافية وتكون في أمان.</p>
         <button class="btn" onclick="endCinematicIntro()" style="margin-top: 20px;">ابدأ اللعب الآن</button>
     </div>
@@ -141,7 +137,6 @@ const DESIGN_ASSETS = {
     trayTexture: 'https://images.unsplash.com/photo-1522066841261-2679905c1e19?q=80&w=500',
     clayTablet: 'https://images.unsplash.com/photo-1616743845946-b33c0617baea?q=80&w=500', 
     pottery: 'https://images.unsplash.com/photo-1610705462521-1dc53460df76?q=80&w=500',
-
     bgMusic: 'music.mp3'
 };
 
@@ -203,6 +198,9 @@ class Game3D {
         this.mode = mode;
         this.isCinematic = isCinematic;
         this.pointerDownPos = new THREE.Vector2();
+        
+        // متغير جديد لمعرفة الحجر المحدد (نظام النقرتين)
+        this.selectedPieceId = null;
 
         this.initScene();
         this.createEnvironment();
@@ -212,18 +210,15 @@ class Game3D {
         this.createThickGuideLine();
         this.animate();
 
-        // ** إصلاح اللمس للموبايل بشكل دقيق **
         window.addEventListener('pointerdown', (e) => { this.pointerDownPos.set(e.clientX, e.clientY); });
         window.addEventListener('pointerup', (e) => this.onPointerUp(e));
         window.addEventListener('pointermove', (e) => this.onMouseMove(e));
         
-        // دعم التاتش للأجهزة العنيدة
         window.addEventListener('touchstart', (e) => {
             if(e.touches.length > 0) { this.pointerDownPos.set(e.touches[0].clientX, e.touches[0].clientY); }
         }, {passive: true});
         window.addEventListener('touchend', (e) => this.onTouchEnd(e), {passive: false});
 
-        // ضبط الكاميرا للموبايل لترتفع وتنظر للأسفل لسهولة النقر
         this.isMobile = window.innerWidth < 768;
         this.defaultCamPos = this.isMobile ? {x: 0, y: 30, z: 20} : {x: 0, y: 16, z: 26};
         this.controls.maxPolarAngle = this.isMobile ? Math.PI / 2.8 : Math.PI / 2.6;
@@ -389,13 +384,15 @@ class Game3D {
     async rollDice() {
         if(this.isLocked || this.isCinematic) return;
         this.isLocked = true;
+        this.selectedPieceId = null; // إعادة تعيين التحديد مع كل رمية جديدة
+        if(this.guideMesh) this.guideMesh.visible = false;
         
         document.getElementById('roll-btn-container').classList.add('disabled');
 
         let val = 0;
         const anims = [];
 
-        this.diceModels.forEach((die, index) => {
+        this.diceModels.forEach((die) => {
             const isLit = Math.random() < 0.5;
             if(isLit) val++;
             
@@ -406,7 +403,7 @@ class Game3D {
 
         await Promise.all(anims);
         this.rollValue = val;
-        this.logChat(`النتيجة: <b>${val}</b>`);
+        this.logChat(`النتيجة: <b>${val}</b> خطوات`);
 
         if(val === 0) {
             setTimeout(() => this.switchTurn(), 1000);
@@ -420,6 +417,7 @@ class Game3D {
             } else {
                 this.isLocked = false;
                 this.highlightValidPieces(moves);
+                this.logChat("اختر حجراً للتحريك");
             }
         }
     }
@@ -472,12 +470,10 @@ class Game3D {
         this.guideMesh.visible = true;
     }
 
-    // دالة لمس الشاشات لدعم الموبايل بدقة
     onTouchEnd(event) {
         if (this.isCinematic || this.isLocked || this.rollValue === 0) return;
         if (event.changedTouches.length > 0) {
             let touch = event.changedTouches[0];
-            // مسافة التسامح للموبايل 15 بكسل للتمييز بين السحب والنقر
             if (Math.hypot(touch.clientX - this.pointerDownPos.x, touch.clientY - this.pointerDownPos.y) > 15) return;
             
             this.mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
@@ -487,8 +483,10 @@ class Game3D {
     }
 
     onMouseMove(event) {
+        // بالكمبيوتر، إذا لم يكن هناك حجر محدد، أظهر الخط كمعاينة (Hover)
+        if (this.selectedPieceId !== null || this.isMobile) return; 
+
         let cx = event.clientX; let cy = event.clientY;
-        if(event.touches && event.touches.length > 0) { cx = event.touches[0].clientX; cy = event.touches[0].clientY; }
         this.mouse.x = (cx / window.innerWidth) * 2 - 1; this.mouse.y = -(cy / window.innerHeight) * 2 + 1;
 
         if (this.isLocked || this.isCinematic || this.rollValue === 0 || (this.mode === 'BOT' && this.turn === 2)) {
@@ -510,7 +508,6 @@ class Game3D {
 
     onPointerUp(event) {
         if (this.isCinematic || this.isLocked || this.rollValue === 0) return;
-        // تجاهل حدث الماوس إذا كان لمساً لتفادي التكرار
         if (event.pointerType === 'touch') return; 
         if (Math.hypot(event.clientX - this.pointerDownPos.x, event.clientY - this.pointerDownPos.y) > 10) return; 
 
@@ -519,14 +516,34 @@ class Game3D {
         this.raycastPiece();
     }
 
+    // هنا برمجة نظام "النقرتين"
     raycastPiece() {
         this.raycaster.setFromCamera(this.mouse, this.camera);
         const intersects = this.raycaster.intersectObjects(this.pieces);
+        
         if(intersects.length > 0) {
             const obj = intersects[0].object;
             if(obj.userData.player === this.turn && this.getPossibleMoves(this.turn).includes(obj.userData.id)) {
-                this.movePiece(obj.userData.id, this.turn);
+                
+                // إذا ضغطنا على نفس الحجر المحدد مسبقاً -> حرك الحجر
+                if (this.selectedPieceId === obj.userData.id) {
+                    this.movePiece(obj.userData.id, this.turn);
+                    this.selectedPieceId = null;
+                } 
+                // إذا ضغطنا على حجر للمرة الأولى -> حدده وارسم الخط
+                else {
+                    this.selectedPieceId = obj.userData.id;
+                    this.drawGuideLine(obj);
+                }
+            } else {
+                // إذا ضغطنا على حجر غير متاح
+                this.selectedPieceId = null;
+                if(this.guideMesh) this.guideMesh.visible = false;
             }
+        } else {
+            // إذا ضغطنا على مساحة فارغة في الشاشة، نلغي التحديد
+            this.selectedPieceId = null;
+            if(this.guideMesh) this.guideMesh.visible = false;
         }
     }
 
@@ -591,6 +608,7 @@ class Game3D {
     resetForNextRoll() {
         this.isLocked = false;
         this.rollValue = 0;
+        this.selectedPieceId = null;
         
         const btn = document.getElementById('roll-btn-container');
         if(this.turn === 1) {
