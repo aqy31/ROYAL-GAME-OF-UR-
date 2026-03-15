@@ -41,7 +41,8 @@
             position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 120; pointer-events: auto;
         }
         .settings-box {
-            background-image: url('set_bg.PNG'); /* الحرف الكبير لأنك سميته كذا بملفاتك */
+            /* 🚨 الحروف مطابقة لملفاتك 🚨 */
+            background-image: url('set_bg.PNG'); 
             background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
             padding: 50px 40px; display: flex; flex-direction: column; align-items: center; gap: 15px; 
             width: 85vw; max-width: 500px; max-height: 85vh; overflow-y: auto; box-sizing: border-box;
@@ -93,7 +94,7 @@
             overflow-y: auto; padding: 20px 0 80px 0;
         }
         .menu-buttons {
-            display: flex; flex-direction: column; gap: 0px !important; align-items: center; 
+            display: flex; flex-direction: column; gap: 0px; align-items: center; 
             background: transparent; padding: 0; margin: auto; width: 100%;
         }
         .img-btn { 
@@ -129,10 +130,9 @@
             .score-num { font-size: 1.4rem; margin-top: 2px;}
             #in-game-settings-btn { width: 40px; height: 40px; }
             #bottom-bar { bottom: 15px; left: 10px; right: 10px; gap: 10px; flex-direction: row;}
-            .roll-img-btn { width: 100px; }
+            .roll-img-btn { width: 100px; font-size: 14px;}
             #chat-log { width: calc(100% - 110px); height: 75px; font-size: 11px; padding: 10px 15px; }
             .company-logo { height: 28px; }
-            #img-turn { height: 30px !important; }
             .settings-box { width: 95vw; padding: 20px; }
         }
     </style>
@@ -222,12 +222,12 @@
 </div>
 
 <div id="intro-overlay" onclick="playClickSound(); endCinematicIntro();" style="cursor: pointer;">
-    <img id="img-instructions" src="instructions.png" alt="" style="height: 85vh; width: auto; max-width: 95vw; object-fit: contain; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.9)); transition: 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+    <img id="img-instructions" src="instructions.png" alt="" style="height: 85vh; width: auto; max-width: 95vw; object-fit: contain; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.9)); transition: 0.2s;">
 </div>
 
 <script>
-// 🚨 أسماء الملفات مطابقة بالضبط للصور المرفوعة في GitHub حسب الشاشة 🚨
-// الحروف الكبيرة (Capital) والحروف الصغيرة (Small) محسوبة بالملي!
+// 🚨 الإضاءة والأصوات
+document.getElementById('bg-music').src = 'music.mp3';
 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
@@ -243,7 +243,6 @@ async function loadSFX(id, url) {
     } catch (err) {}
 }
 
-document.getElementById('bg-music').src = 'music.mp3';
 loadSFX('dice', 'dice.mp3');
 loadSFX('move', 'move.mp3');
 loadSFX('click', 'click.mp3'); 
@@ -251,7 +250,6 @@ loadSFX('click', 'click.mp3');
 function playSFX(id) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
     if (sfxVolume <= 0) return;
-
     if (audioBuffers[id]) {
         const source = audioCtx.createBufferSource();
         source.buffer = audioBuffers[id];
@@ -279,18 +277,16 @@ function openSettings() {
 }
 function closeSettings() { document.getElementById('settings-menu').style.display = 'none'; }
 
+// 🚨 تحميل خامات 3D بأسمائها الصحيحة 100% 🚨
 const textureLoader = new THREE.TextureLoader();
-
-// 🚨 تحميل خامات 3D بنفس الامتدادات 🚨
 const textures = {
-    boardTex: textureLoader.load('board.png'),
-    boardSide: textureLoader.load('board_side.PNG'), // حرف كبير حسب الجيت هب
+    boardTex: textureLoader.load('board.PNG'),
+    boardSide: textureLoader.load('board_side.PNG'), 
     table: textureLoader.load('table.png'),
-    tableSide: textureLoader.load('table_side.png'), 
-    pieceBlue: textureLoader.load('blue.png'),
-    pieceRed: textureLoader.load('red.PNG'),         // حرف كبير حسب صورتك
+    pieceBlue: textureLoader.load('blue.PNG'),
+    pieceRed: textureLoader.load('red.PNG'),
     dice: textureLoader.load('dice.png'),
-    tray: textureLoader.load('tray.PNG'),            // حرف كبير حسب صورتك
+    tray: textureLoader.load('tray.PNG'),
     clay: textureLoader.load('clay.png'),
     roomWall: textureLoader.load('wall.png')
 };
@@ -379,21 +375,12 @@ class Game3D {
         }
         document.body.appendChild(this.renderer.domElement);
 
-        // 🚨 إرجاع الإضاءة الذهبية الأصلية الدافئة (مطابقة لطلبك الأول) 🚨
-        const ambientLight = new THREE.AmbientLight(0xffecd4, 0.6); 
-        this.scene.add(ambientLight);
-
-        const dirLight = new THREE.DirectionalLight(0xffa050, 1.5); 
-        dirLight.position.set(15, 25, -15);
-        dirLight.castShadow = true;
-        dirLight.shadow.mapSize.width = 2048;
-        dirLight.shadow.mapSize.height = 2048;
-        dirLight.shadow.bias = -0.001;
-        this.scene.add(dirLight);
-
-        const spotLight = new THREE.SpotLight(0xff8833, 0.8, 100);
-        spotLight.position.set(0, 10, 0);
-        this.scene.add(spotLight);
+        // 🚨 إرجاع الإضاءة الذهبية الأصلية والمريحة جداً 🚨
+        this.scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+        const sun = new THREE.PointLight(0xffccaa, 1.5, 100); 
+        sun.position.set(0,20,10); 
+        sun.castShadow = true; 
+        this.scene.add(sun);
     }
 
     createEnvironment() {
@@ -401,6 +388,8 @@ class Game3D {
         textures.table.repeat.set(6, 6); 
 
         const tableTopMat = new THREE.MeshStandardMaterial({ map: textures.table, color: 0xffffff, roughness: 0.9 });
+        
+        // الطاولة الكبيرة
         const table = new THREE.Mesh(new THREE.BoxGeometry(70, 2, 50), tableTopMat);
         table.position.set(0, -1, 0);
         table.receiveShadow = true;
@@ -418,7 +407,7 @@ class Game3D {
 
         textures.roomWall.wrapS = THREE.RepeatWrapping; textures.roomWall.wrapT = THREE.RepeatWrapping;
         textures.roomWall.repeat.set(5, 5); 
-        const roomMat = new THREE.MeshStandardMaterial({ map: textures.roomWall, color: 0xc29b70, roughness: 1, side: THREE.BackSide });
+        const roomMat = new THREE.MeshStandardMaterial({ map: textures.roomWall, color: 0xddbb99, roughness: 1, side: THREE.BackSide });
         
         const room = new THREE.Mesh(new THREE.BoxGeometry(150, 80, 150), roomMat);
         room.position.y = 20;
@@ -436,7 +425,7 @@ class Game3D {
         const cx = CONFIG.cx;
         const cz = CONFIG.cz;
         
-        // 🚨 الخشبة ككتلة واحدة لمنع التقطيع 🚨
+        // 🚨 الخشبة الصغيرة قطعة واحدة لتلتف الصورة بدون تقطيع 🚨
         const shape = new THREE.Shape();
         shape.moveTo(-4 * cx, -1.5 * cz);
         shape.lineTo( 0 * cx, -1.5 * cz);
@@ -474,7 +463,6 @@ class Game3D {
         textures.boardSide.repeat.set(12, 1);
 
         const topMat = new THREE.MeshStandardMaterial({ map: textures.boardTex, color: 0xffffff, roughness: 0.6 });
-        // 🚨 ربط الجوانب بصورة الشريط 🚨
         const sideMat = new THREE.MeshStandardMaterial({ map: textures.boardSide, color: 0xffffff, roughness: 0.8 }); 
         
         const boardMesh = new THREE.Mesh(boardGeo, [topMat, sideMat]);
@@ -484,7 +472,7 @@ class Game3D {
         boardMesh.castShadow = true;
         boardGroup.add(boardMesh);
 
-        // خطوط تقسيم المربعات
+        // خطوط تقسيم
         const lineMat = new THREE.LineBasicMaterial({ color: 0x4a2a1a, linewidth: 2 });
         for(let r=0; r<3; r++) {
             for(let c=0; c<8; c++) {
@@ -908,9 +896,7 @@ function endCinematicIntro() {
         if (slider) audio.volume = parseFloat(slider.value); 
         let playPromise = audio.play();
         if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                window.addEventListener('pointerdown', () => audio.play(), { once: true });
-            });
+            playPromise.catch(error => {});
         }
     }
 
