@@ -49,14 +49,11 @@
         .settings-box {
             background-image: url('set_bg.png'); 
             background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
-            padding: 40px; display: flex; flex-direction: column; align-items: center; gap: 15px; 
+            padding: 50px 40px; display: flex; flex-direction: column; align-items: center; gap: 15px; 
             width: 85vw; max-width: 500px; max-height: 85vh; overflow-y: auto; box-sizing: border-box;
         }
         .slider-container { width: 100%; text-align: center; margin-bottom: 10px;}
         
-        .toggle-img { cursor: pointer; transition: transform 0.2s; pointer-events: auto; }
-        .toggle-img:hover { transform: scale(1.05); }
-
         input[type=range] { 
             -webkit-appearance: none; width: 85%; background: transparent; cursor: pointer; pointer-events: auto;
         }
@@ -138,15 +135,11 @@
             .score-num { font-size: 1.4rem; margin-top: 2px;}
             #in-game-settings-btn { width: 40px; height: 40px; }
             #bottom-bar { bottom: 15px; left: 10px; right: 10px; gap: 10px; flex-direction: row;}
-            .roll-img-btn { width: 100px; }
+            .roll-img-btn { width: 100px; font-size: 14px;}
             #chat-log { width: calc(100% - 110px); height: 75px; font-size: 11px; padding: 10px 15px; }
             .company-logo { height: 28px; }
             #img-turn { height: 30px !important; }
-            
-            .settings-box { width: 90vw; padding: 30px 20px; gap: 10px; }
-            #img-set-title { width: 180px !important; }
-            .slider-container img { width: 120px !important; }
-            .img-btn { width: 75vw; max-width: 260px; }
+            .settings-box { width: 95vw; padding: 20px; }
         }
     </style>
 </head>
@@ -177,7 +170,7 @@
         <img id="btn-roll" src="btn_roll.png" class="roll-img-btn" onclick="playClickSound(); if(game && !game.isCinematic) game.rollDice()" alt="">
         
         <div id="chat-log">
-            <div class="log-entry">Game ready, Good luck!</div>
+            <div class="log-entry">🟢 Game ready, Good luck!</div>
         </div>
     </div>
 
@@ -188,26 +181,26 @@
 
 <div id="settings-menu">
     <div class="settings-box">
-        <img id="img-set-title" src="set_title.png" alt="" style="width: 220px; height: auto; margin-bottom: 5px;">
+        <img id="img-set-title" src="set_title.png" alt="" style="width: 250px; height: auto; margin-bottom: 5px;">
         
         <div class="slider-container">
-            <img id="img-set-music" src="set_music.png" alt="" class="toggle-img" style="width: 140px; height: auto; margin: 0 auto 5px auto; display: block;" onclick="toggleMusic()">
+            <img id="img-set-music" src="set_music.png" alt="" style="width: 160px; height: auto; margin: 0 auto 5px auto; display: block;">
             <div class="flex-row">
                 <input type="range" id="bgm-slider" min="0" max="1" step="0.05" value="0.4" oninput="updateBGM(this.value)">
             </div>
         </div>
         
         <div class="slider-container">
-            <img id="img-set-sfx" src="set_sfx.png" alt="" class="toggle-img" style="width: 140px; height: auto; margin: 0 auto 5px auto; display: block;" onclick="toggleSFX()">
+            <img id="img-set-sfx" src="set_sfx.png" alt="" style="width: 160px; height: auto; margin: 0 auto 5px auto; display: block;">
             <div class="flex-row">
                 <input type="range" id="sfx-slider" min="0" max="1" step="0.05" value="1.0" oninput="updateSFX(this.value)">
             </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 10px;">
-            <img id="img-set-resume" src="set_resume.png" class="img-btn" onclick="playClickSound(); closeSettings();" alt="">
-            <img id="img-set-restart" src="set_restart.png" class="img-btn" onclick="playClickSound(); restartGame();" alt="">
-            <img id="img-set-exit" src="set_exit.png" class="img-btn" onclick="playClickSound(); exitGame();" alt="">
+        <div style="display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 15px;">
+            <img id="img-set-resume" src="set_resume.png" class="img-btn" style="width: 220px;" onclick="playClickSound(); closeSettings();" alt="">
+            <img id="img-set-restart" src="set_restart.png" class="img-btn" style="width: 220px;" onclick="playClickSound(); restartGame();" alt="">
+            <img id="img-set-exit" src="set_exit.png" class="img-btn" style="width: 220px;" onclick="playClickSound(); exitGame();" alt="">
         </div>
     </div>
 </div>
@@ -264,10 +257,7 @@ document.getElementById('bg-music').src = 'music.mp3';
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 const audioBuffers = {};
-
 let sfxVolume = 1.0;
-let lastMusicVol = 0.4;
-let lastSfxVol = 1.0;
 
 async function loadSFX(id, url) {
     try {
@@ -298,45 +288,8 @@ function playSFX(id) {
 }
 
 function playClickSound() { playSFX('click'); }
-
-function updateBGM(val) { 
-    const audio = document.getElementById('bg-music');
-    audio.volume = parseFloat(val); 
-    if (audio.volume > 0) lastMusicVol = audio.volume;
-}
-
-function updateSFX(val) { 
-    sfxVolume = parseFloat(val); 
-    if (sfxVolume > 0) lastSfxVol = sfxVolume;
-}
-
-function toggleMusic() {
-    const audio = document.getElementById('bg-music');
-    const slider = document.getElementById('bgm-slider');
-    if(audio.volume > 0) {
-        lastMusicVol = audio.volume;
-        audio.volume = 0;
-        slider.value = 0;
-    } else {
-        audio.volume = lastMusicVol > 0 ? lastMusicVol : 0.4;
-        slider.value = audio.volume;
-        if(audio.paused) audio.play();
-    }
-    playClickSound();
-}
-
-function toggleSFX() {
-    const slider = document.getElementById('sfx-slider');
-    if(sfxVolume > 0) {
-        lastSfxVol = sfxVolume;
-        sfxVolume = 0;
-        slider.value = 0;
-    } else {
-        sfxVolume = lastSfxVol > 0 ? lastSfxVol : 1.0;
-        slider.value = sfxVolume;
-    }
-    playClickSound();
-}
+function updateBGM(val) { document.getElementById('bg-music').volume = parseFloat(val); }
+function updateSFX(val) { sfxVolume = parseFloat(val); }
 
 function openSettings() { 
     document.getElementById('settings-menu').style.display = 'flex'; 
@@ -356,6 +309,7 @@ const textures = {
     boardTex: textureLoader.load('board.png'),
     boardSide: textureLoader.load('board_side.png'), 
     table: textureLoader.load('table.png'),
+    tableSide: textureLoader.load('table_side.png'), 
     pieceBlue: textureLoader.load('blue.png'),
     pieceRed: textureLoader.load('red.png'),
     dice: textureLoader.load('dice.png'),
@@ -460,9 +414,7 @@ class Game3D {
     }
 
     createEnvironment() {
-        textures.table.wrapS = THREE.RepeatWrapping; textures.table.wrapT = THREE.RepeatWrapping;
-        textures.table.repeat.set(6, 6); 
-
+        // 🚨 الطاولة قطعة واحدة (بدون مربعات) 🚨
         const tableTopMat = new THREE.MeshStandardMaterial({ map: textures.table, color: 0xffffff, roughness: 0.9 });
         
         const table = new THREE.Mesh(new THREE.BoxGeometry(70, 2, 50), tableTopMat);
