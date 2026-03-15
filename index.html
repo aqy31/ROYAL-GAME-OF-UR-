@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أور الملكية - النسخة المبسطة</title>
+    <title>Royal Game of Ur - Pro Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
     <style>
         body { 
             margin: 0; overflow: hidden; background-color: #050505; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Papyrus', fantasy, sans-serif; 
             touch-action: none; user-select: none; -webkit-user-select: none;
         }
         canvas { background: transparent !important; display: block; touch-action: none; outline: none; }
@@ -22,93 +22,127 @@
             position: absolute; top: 15px; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; box-sizing: border-box; pointer-events: none; z-index: 20;
         }
         .score-box {
-            background: rgba(10, 5, 0, 0.85); border: 2px solid #d4af37; padding: 10px 20px; border-radius: 10px; color: white; font-weight: bold; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            background: rgba(10, 5, 0, 0.85); border: 2px solid #d4af37; padding: 10px; border-radius: 10px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 80px;
         }
-        .score-box.p1 { border-color: #4cc9f0; color: #4cc9f0; } 
-        .score-box.p2 { border-color: #f72585; color: #f72585; } 
-        .score-num { display: block; font-size: 1.8rem; color: white; margin-top: 5px;}
+        .score-box.p1 { border-color: #4cc9f0; } 
+        .score-box.p2 { border-color: #f72585; } 
+        .score-num { display: block; font-size: 1.8rem; color: white; margin-top: 5px; font-weight: bold;}
         
-        #status-bar { color: #d4af37; font-size: 1.8rem; text-shadow: 2px 2px 5px #000; font-weight: bold; background: rgba(0,0,0,0.5); padding: 5px 20px; border-radius: 20px;}
+        #status-bar { display: flex; justify-content: center; align-items: center; }
 
-        #settings-btn {
-            background: rgba(10, 5, 0, 0.85); border: 2px solid #d4af37; color: #d4af37; font-size: 24px; width: 45px; height: 45px; border-radius: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer; pointer-events: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.8); transition: 0.2s;
+        #in-game-settings-btn {
+            width: 50px; height: 50px; cursor: pointer; pointer-events: auto; transition: transform 0.2s;
         }
-        #settings-btn:hover { background: #d4af37; color: #000; }
+        #in-game-settings-btn:hover { transform: scale(1.1); }
 
         #settings-menu {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 90; pointer-events: auto;
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 120; pointer-events: auto;
         }
         .settings-box {
-            background: rgba(20, 15, 10, 0.95); padding: 30px; border: 2px solid #d4af37; border-radius: 10px; text-align: center; color: white; width: 90%; max-width: 400px; box-shadow: 0 0 30px #000;
+            background-image: url('set_bg.png'); 
+            background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
+            padding: 70px 50px; 
+            display: flex; flex-direction: column; align-items: center; gap: 20px; 
+            width: 90%; max-width: 550px; 
         }
-        .settings-box h2 { color: #d4af37; border-bottom: 1px solid #d4af37; padding-bottom: 10px; margin-top: 0;}
-        .slider-container { margin: 20px 0; text-align: right;}
-        .slider-container label { display: block; margin-bottom: 10px; font-weight: bold; color: #d4af37;}
-        input[type=range] { width: 100%; accent-color: #d4af37; cursor: pointer; touch-action: manipulation !important; pointer-events: auto;}
+        .slider-container { width: 100%; text-align: center;}
         
-        .settings-btn { display: block; width: 100%; padding: 12px; margin: 10px 0; background: #d4af37; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; font-size: 16px;}
-        .settings-btn.danger { background: #aa0000; color: white; }
-        .settings-btn.close { background: #555; color: white; }
-        .settings-btn.music-toggle { background: #2b4c7e; color: white; border: 1px solid #4cc9f0; }
-
-        #bottom-bar { position: absolute; bottom: 20px; left: 20px; right: 20px; display: flex; gap: 15px; align-items: flex-end; justify-content: flex-start; z-index: 20; }
-        #roll-btn-container {
-            background: linear-gradient(135deg, #d4af37, #8a6a1c); border: 2px solid #000; border-radius: 12px; width: 110px; height: 85px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 15px rgba(0,0,0,0.8); transition: 0.2s; pointer-events: auto;
+        input[type=range] { 
+            -webkit-appearance: none; width: 85%; background: transparent; cursor: pointer; touch-action: manipulation !important; pointer-events: auto;
         }
-        #roll-btn-container:hover { filter: brightness(1.2); transform: translateY(-2px); }
-        #roll-btn-container:active { transform: scale(0.95); }
-        #roll-btn-container.disabled { filter: grayscale(1); opacity: 0.5; cursor: not-allowed; transform: none;}
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 20px;
+            background: url('slider_track.png') center/100% 100% no-repeat; 
+            border: none; border-radius: 10px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 40px; width: 40px; 
+            background: url('slider_thumb.png') center/contain no-repeat; 
+            margin-top: -10px; 
+        }
+        input[type=range]::-moz-range-track {
+            width: 100%; height: 20px; background: url('slider_track.png') center/100% 100% no-repeat; border: none;
+        }
+        input[type=range]::-moz-range-thumb {
+            height: 40px; width: 40px; background: url('slider_thumb.png') center/contain no-repeat; border: none;
+        }
         
-        .dice-icon { width: 35px; height: 35px; background-color: #0a1526; border-radius: 50%; border: 2px solid #000; margin-bottom: 5px; position: relative; }
-        .dice-icon::after { content: ''; position: absolute; top: 10px; left: 10px; width: 5px; height: 5px; background: white; border-radius: 50%; box-shadow: 10px 0 0 white, 5px 10px 0 white; }
-        .roll-text { color: #000; font-weight: bold; font-size: 15px; }
+        .flex-row { display: flex; gap: 10px; align-items: center; justify-content: center; width: 100%; flex-direction: column;}
 
+        #bottom-bar { position: absolute; bottom: 20px; left: 20px; right: 20px; display: flex; gap: 15px; align-items: flex-end; justify-content: space-between; z-index: 20; }
+        
+        .roll-img-btn {
+            width: 130px; height: auto; cursor: pointer; pointer-events: auto; transition: 0.2s;
+            filter: drop-shadow(0px 5px 10px rgba(0,0,0,0.6));
+        }
+        .roll-img-btn:hover { transform: scale(1.05); }
+        .roll-img-btn:active { transform: scale(0.95); }
+        .roll-img-btn.disabled { filter: grayscale(1) opacity(0.5); cursor: not-allowed; pointer-events: none;}
+        
         #chat-log {
-            background: rgba(10, 10, 15, 0.85); border: 1px solid #d4af37; width: 350px; height: 85px; border-radius: 10px;
-            padding: 10px; box-sizing: border-box; color: #ddd; font-family: 'Courier New', Courier, monospace; font-size: 13px;
-            display: flex; flex-direction: column; justify-content: flex-end; pointer-events: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.7);
+            background: url('chat_bg.png') center/100% 100% no-repeat;
+            border: none;
+            width: 350px; height: 90px;
+            padding: 15px 25px; 
+            box-sizing: border-box; color: #fff; font-size: 14px; font-weight: bold;
+            display: flex; flex-direction: column; justify-content: flex-end; pointer-events: auto;
+            filter: drop-shadow(0px 5px 10px rgba(0,0,0,0.6));
         }
         .log-entry { margin-bottom: 3px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px;}
 
         #launcher {
             position: fixed; inset: 0; background-color: #111; background-size: cover; background-position: center;
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
+            overflow-y: auto; padding: 20px 0 80px 0;
         }
-        .menu-box { background: rgba(10, 5, 0, 0.9); padding: 30px; border: 2px solid #d4af37; border-radius: 15px; text-align: center; max-width: 90%; box-shadow: 0 0 40px rgba(0,0,0,0.9);}
-        .btn { display: block; width: 100%; max-width: 250px; padding: 15px; margin: 10px auto; background: #d4af37; color: #000; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; border-radius: 8px;}
-        
+        .menu-buttons {
+            display: flex; flex-direction: column; gap: 0px !important; align-items: center; 
+            background: transparent; 
+            padding: 0; border: none; box-shadow: none; 
+            margin-top: auto; margin-bottom: auto;
+        }
+        .img-btn { 
+            width: 320px; max-width: 90vw; height: auto; cursor: pointer; transition: transform 0.2s;
+            margin: 0 !important; padding: 0 !important; display: block;
+            filter: drop-shadow(0px 6px 12px rgba(0,0,0,0.6)); 
+        }
+        .img-btn:hover { transform: scale(1.03); z-index: 2; position: relative; }
+
+        #footer {
+            position: fixed; bottom: 0; width: 100%; height: 45px;
+            background: #000000; border: none; 
+            display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-sizing: border-box;
+            z-index: 101;
+        }
+        .footer-left { display: flex; gap: 15px; align-items: center; }
+        .social-icon { width: 25px; height: 25px; cursor: pointer; transition: transform 0.2s; }
+        .social-icon:hover { transform: scale(1.1); }
+        .footer-center { position: absolute; left: 50%; transform: translateX(-50%); }
+        .company-logo { height: 35px; width: auto; }
+        .footer-right { color: #d4af37; font-weight: bold; font-size: 13px; }
+
         #intro-overlay {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(3px);
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px);
             display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 80;
         }
-        .intro-box {
-            background: rgba(20, 15, 10, 0.95); padding: 25px; border: 2px solid #d4af37; border-radius: 10px; text-align: center; color: white; width: 90%; max-width: 500px;
-            box-shadow: 0 0 30px #000;
-        }
-        .intro-box h2 { color: #d4af37; border-bottom: 1px solid #d4af37; padding-bottom: 10px; font-size: 22px;}
-        .intro-box p { font-size: 16px; line-height: 1.6; margin: 10px 0;}
-
+        
         #zoom-hint {
             position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(10, 5, 0, 0.85); color: #d4af37; border: 2px solid #d4af37;
-            padding: 20px 30px; border-radius: 15px; font-weight: bold; font-size: 1.3rem;
-            text-align: center; pointer-events: none; opacity: 0; z-index: 50; display: none;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            display: none; z-index: 50; pointer-events: none; opacity: 0;
         }
 
         @media (max-width: 768px) {
             #top-ui { padding: 10px; top: 5px; }
-            .score-box { padding: 5px 10px; font-size: 12px; }
+            .score-box { padding: 5px; min-width: 60px; }
             .score-num { font-size: 1.4rem; margin-top: 2px;}
-            #status-bar { font-size: 1.2rem; padding: 5px 10px;}
-            #settings-btn { width: 40px; height: 40px; font-size: 20px;}
-            #bottom-bar { bottom: 15px; left: 10px; right: 10px; gap: 10px; }
-            #roll-btn-container { width: 90px; height: 75px; }
-            .dice-icon { width: 28px; height: 28px; }
-            .roll-text { font-size: 13px; }
-            #chat-log { width: calc(100% - 100px); height: 75px; font-size: 11px; padding: 5px 8px; }
-            #zoom-hint { width: 80%; padding: 15px 10px; font-size: 1.1rem; }
+            #in-game-settings-btn { width: 40px; height: 40px; }
+            #bottom-bar { bottom: 15px; left: 10px; right: 10px; gap: 10px; flex-direction: row;}
+            .roll-img-btn { width: 100px; }
+            #chat-log { width: calc(100% - 110px); height: 75px; font-size: 11px; padding: 10px 15px; }
+            .company-logo { height: 28px; }
+            #img-turn { height: 30px !important; }
         }
     </style>
 </head>
@@ -118,66 +152,96 @@
 
 <div id="ui-layer">
     <div id="top-ui">
-        <div class="score-box p1">اللازورد <span class="score-num" id="s1">0</span></div>
-        <div id="status-bar">دورك للعب</div>
-        <div class="score-box p2">العقيق <span class="score-num" id="s2">0</span></div>
-        <div id="settings-btn" onclick="openSettings()">☰</div>
+        <div class="score-box p1">
+            <img id="img-p1-name" src="p1_name.png" alt="Player 1" style="height: 25px; max-width: 100%; object-fit: contain;">
+            <span class="score-num" id="s1">0</span>
+        </div>
+        
+        <div id="status-bar">
+            <img id="img-turn" src="turn_p1.png" alt="Turn" style="height: 40px; object-fit: contain;">
+        </div>
+
+        <div class="score-box p2">
+            <img id="img-p2-name" src="p2_name.png" alt="Player 2" style="height: 25px; max-width: 100%; object-fit: contain;">
+            <span class="score-num" id="s2">0</span>
+        </div>
+
+        <img id="in-game-settings-btn" src="set_icon.png" onclick="playClickSound(); openSettings();" alt="Settings">
     </div>
     
     <div id="bottom-bar">
-        <div id="roll-btn-container" onclick="if(game && !game.isCinematic) game.rollDice()">
-            <div class="dice-icon"></div>
-            <div class="roll-text">رمي النرد</div>
-        </div>
+        <img id="btn-roll" src="btn_roll.png" class="roll-img-btn" onclick="playClickSound(); if(game && !game.isCinematic) game.rollDice()" alt="Roll Dice">
+        
         <div id="chat-log">
-            <div class="log-entry">🟢 اللعبة جاهزة، بالتوفيق!</div>
+            <div class="log-entry">🟢 Game ready, Good luck!</div>
         </div>
     </div>
 
     <div id="zoom-hint">
-        <div style="font-size: 35px; margin-bottom: 10px;">🔍</div>
-        يمكنك تكبير وتصغير وتدوير الشاشة
+        <img id="img-zoom-hint" src="zoom_hint.png" alt="Zoom Hint" style="width: 250px; max-width: 80vw; height: auto; filter: drop-shadow(0px 5px 10px rgba(0,0,0,0.8));">
     </div>
 </div>
 
 <div id="settings-menu">
     <div class="settings-box">
-        <h2>إعدادات اللعبة</h2>
+        <img id="img-set-title" src="set_title.png" alt="Settings" style="width: 250px; height: auto; margin-bottom: 5px;">
+        
         <div class="slider-container">
-            <label>مستوى موسيقى الخلفية</label>
-            <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.4" oninput="updateMusicVolume(this.value)">
+            <img id="img-set-music" src="set_music.png" alt="Music" style="width: 160px; height: auto; margin: 0 auto 10px auto; display: block;">
+            <div class="flex-row">
+                <input type="range" id="bgm-slider" min="0" max="1" step="0.05" value="0.4" oninput="updateBGM(this.value)">
+            </div>
         </div>
-        <button id="mute-btn" class="settings-btn music-toggle" onclick="toggleMusic()">إيقاف الموسيقى 🔊</button>
-        <button class="settings-btn close" onclick="closeSettings()">إكمال اللعب</button>
-        <button class="settings-btn" onclick="restartGame()">إعادة اللعبة 🔄</button>
-        <button class="settings-btn danger" onclick="exitGame()">الخروج للقائمة 🚪</button>
+        
+        <div class="slider-container">
+            <img id="img-set-sfx" src="set_sfx.png" alt="SFX" style="width: 160px; height: auto; margin: 0 auto 10px auto; display: block;">
+            <div class="flex-row">
+                <input type="range" id="sfx-slider" min="0" max="1" step="0.05" value="1.0" oninput="updateSFX(this.value)">
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 5px; align-items: center; width: 100%; margin-top: 15px;">
+            <img id="img-set-resume" src="set_resume.png" class="img-btn" style="width: 220px;" onclick="playClickSound(); closeSettings();" alt="Resume">
+            <img id="img-set-restart" src="set_restart.png" class="img-btn" style="width: 220px;" onclick="playClickSound(); restartGame();" alt="Restart">
+            <img id="img-set-exit" src="set_exit.png" class="img-btn" style="width: 220px;" onclick="playClickSound(); exitGame();" alt="Exit">
+        </div>
     </div>
 </div>
 
 <div id="launcher">
-    <div class="menu-box">
-        <h1 style="color: #d4af37; margin-bottom: 20px;">أور الملكية</h1>
-        <button class="btn" onclick="startCinematicIntro('PVP')">لاعب ضد لاعب</button>
-        <button class="btn" onclick="startCinematicIntro('BOT')" style="background: #8d6e63;">الكمبيوتر</button>
+    <div class="menu-buttons">
+        <img id="btn-pvp" class="img-btn" onclick="playClickSound(); startCinematicIntro('PVP');" alt="Local PVP">
+        <img id="btn-online" class="img-btn" onclick="playClickSound(); alert('Online multiplayer coming soon!');" alt="Online">
+        <img id="btn-bot" class="img-btn" onclick="playClickSound(); startCinematicIntro('BOT');" alt="Play vs Bot">
+        <img id="btn-settings" class="img-btn" onclick="playClickSound(); openSettings();" alt="Settings">
+    </div>
+
+    <div id="footer">
+        <div class="footer-left">
+            <a href="https://t.me/aqy_31" target="_blank"><img id="logo-tele" class="social-icon" alt="Telegram"></a>
+            <a href="https://www.instagram.com/aqy31_?igsh=MWx1eTFod3RnazRuYw%3D%3D&utm_source=qr" target="_blank"><img id="logo-insta" class="social-icon" alt="Instagram"></a>
+        </div>
+        <div class="footer-center">
+            <img id="logo-center" class="company-logo" alt="Company Logo">
+        </div>
+        <div class="footer-right">
+            © 2026
+        </div>
     </div>
 </div>
 
-<div id="intro-overlay">
-    <div class="intro-box">
-        <h2>تعليمات اللعبة</h2>
-        <p>🎲 <b>النرد:</b> ارمِ النرد لتحصل على خطوات (0 إلى 4).</p>
-        <p>👆 <b>التحريك:</b> اضغط على الحجر مرة لرؤية المسار، ومرة ثانية لتأكيد الحركة.</p>
-        <p>🌸 <b>الوردة:</b> قف على الوردة لتحصل على رمية إضافية وتكون في أمان.</p>
-        <button class="btn" onclick="endCinematicIntro()" style="margin-top: 20px;">ابدأ اللعب الآن</button>
-    </div>
+<div id="intro-overlay" onclick="playClickSound(); endCinematicIntro();" style="cursor: pointer;">
+    <img id="img-instructions" src="instructions.png" alt="Instructions" style="height: 85vh; width: auto; max-width: 95vw; object-fit: contain; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.9)); transition: 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
 </div>
 
 <script>
 const DESIGN_ASSETS = {
     boardTex: 'board.png',
+    boardSideTex: 'board_side.png', // خامة الجوانب للعبة
     mainMenuBackground: 'wall.png',
     roomWallTexture: 'wall.png',
     mainTable: 'table.png',
+    tableSideTex: 'table_side.png', 
     trayTexture: 'tray.png',
     pieceBlue: 'blue.png',
     pieceRed: 'red.png',
@@ -188,12 +252,67 @@ const DESIGN_ASSETS = {
     moveSound: 'move.mp3'  
 };
 
-document.getElementById('launcher').style.backgroundImage = `url('${DESIGN_ASSETS.mainMenuBackground}')`;
+const UI_ASSETS = {
+    bgUI: 'bg.png',
+    btn1: 'btn1.png',
+    btn2: 'btn2.png',
+    btn3: 'btn3.png',
+    btn4: 'btn4.png',
+    logo: 'logo.png',
+    tele: 'tele.png',
+    insta: 'insta.png',
+    
+    setIcon: 'set_icon.png', 
+    setTitle: 'set_title.png',
+    setMusic: 'set_music.png',
+    setSfx: 'set_sfx.png',
+    setResume: 'set_resume.png',
+    setRestart: 'set_restart.png',
+    setExit: 'set_exit.png',
+
+    p1Name: 'p1_name.png', 
+    p2Name: 'p2_name.png', 
+    turnP1: 'turn_p1.png', 
+    turnP2: 'turn_p2.png', 
+    instructions: 'instructions.png', 
+    zoomHint: 'zoom_hint.png', 
+    
+    btnRoll: 'btn_roll.png', 
+    chatBg: 'chat_bg.png',   
+
+    clickSound: 'click.mp3' 
+};
+
+document.getElementById('launcher').style.backgroundImage = `url('${UI_ASSETS.bgUI}')`;
 document.getElementById('bg-music').src = DESIGN_ASSETS.bgMusic;
+document.getElementById('btn-pvp').src = UI_ASSETS.btn1;
+document.getElementById('btn-online').src = UI_ASSETS.btn2;
+document.getElementById('btn-bot').src = UI_ASSETS.btn3;
+document.getElementById('btn-settings').src = UI_ASSETS.btn4;
+document.getElementById('logo-center').src = UI_ASSETS.logo;
+document.getElementById('logo-tele').src = UI_ASSETS.tele;
+document.getElementById('logo-insta').src = UI_ASSETS.insta;
+
+document.getElementById('in-game-settings-btn').src = UI_ASSETS.setIcon;
+document.getElementById('img-set-title').src = UI_ASSETS.setTitle;
+document.getElementById('img-set-music').src = UI_ASSETS.setMusic;
+document.getElementById('img-set-sfx').src = UI_ASSETS.setSfx;
+document.getElementById('img-set-resume').src = UI_ASSETS.setResume;
+document.getElementById('img-set-restart').src = UI_ASSETS.setRestart;
+document.getElementById('img-set-exit').src = UI_ASSETS.setExit;
+
+document.getElementById('img-p1-name').src = UI_ASSETS.p1Name;
+document.getElementById('img-p2-name').src = UI_ASSETS.p2Name;
+document.getElementById('img-turn').src = UI_ASSETS.turnP1;
+document.getElementById('img-instructions').src = UI_ASSETS.instructions;
+document.getElementById('img-zoom-hint').src = UI_ASSETS.zoomHint;
+document.getElementById('btn-roll').src = UI_ASSETS.btnRoll; 
 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 const audioBuffers = {};
+
+let sfxVolume = 1.0;
 
 async function loadSFX(id, url) {
     try {
@@ -206,21 +325,53 @@ async function loadSFX(id, url) {
 
 loadSFX('dice', DESIGN_ASSETS.diceSound);
 loadSFX('move', DESIGN_ASSETS.moveSound);
+loadSFX('click', UI_ASSETS.clickSound); 
 
 function playSFX(id) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (sfxVolume <= 0) return;
+
     if (audioBuffers[id]) {
         const source = audioCtx.createBufferSource();
         source.buffer = audioBuffers[id];
-        source.connect(audioCtx.destination);
+        const gainNode = audioCtx.createGain();
+        gainNode.gain.value = sfxVolume;
+        source.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
         source.start(0);
     }
 }
 
+function playClickSound() {
+    playSFX('click');
+}
+
+function updateBGM(val) {
+    document.getElementById('bg-music').volume = parseFloat(val);
+}
+
+function updateSFX(val) {
+    sfxVolume = parseFloat(val);
+}
+
+function openSettings() { 
+    document.getElementById('settings-menu').style.display = 'flex'; 
+    if (game == null) {
+        document.getElementById('img-set-restart').style.display = 'none';
+        document.getElementById('img-set-exit').style.display = 'none';
+    } else {
+        document.getElementById('img-set-restart').style.display = 'block';
+        document.getElementById('img-set-exit').style.display = 'block';
+    }
+}
+function closeSettings() { document.getElementById('settings-menu').style.display = 'none'; }
+
 const textureLoader = new THREE.TextureLoader();
 const textures = {
     boardTex: textureLoader.load(DESIGN_ASSETS.boardTex),
+    boardSide: textureLoader.load(DESIGN_ASSETS.boardSideTex),
     table: textureLoader.load(DESIGN_ASSETS.mainTable),
+    tableSide: textureLoader.load(DESIGN_ASSETS.tableSideTex), 
     pieceBlue: textureLoader.load(DESIGN_ASSETS.pieceBlue),
     pieceRed: textureLoader.load(DESIGN_ASSETS.pieceRed),
     dice: textureLoader.load(DESIGN_ASSETS.diceTex),
@@ -236,7 +387,6 @@ ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 64, 64);
 const dashTexture = new THREE.CanvasTexture(canvas);
 dashTexture.wrapS = THREE.RepeatWrapping; dashTexture.wrapT = THREE.RepeatWrapping; dashTexture.repeat.set(12, 1);
 
-// أبعاد خشبة اللعب مطابقة تماماً للرقم الجديد 1376 × 519
 const CONFIG = { cx: 13.76 / 8, cz: 5.19 / 3 }; 
 const PATHS = {
     p1: [[2,3],[2,2],[2,1],[2,0],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[2,7],[2,6]],
@@ -246,8 +396,8 @@ const PATHS = {
 class Game3D {
     constructor(mode, isCinematic = false) {
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color('#3a2411'); 
-        this.scene.fog = new THREE.FogExp2('#3a2411', 0.015);
+        this.scene.background = new THREE.Color('#2b1a10'); 
+        this.scene.fog = new THREE.FogExp2('#2b1a10', 0.015);
         
         this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -314,35 +464,41 @@ class Game3D {
         }
         document.body.appendChild(this.renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0xffecd4, 0.6); 
+        const ambientLight = new THREE.AmbientLight(0xffedd9, 0.75); 
         this.scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffa050, 1.5); 
-        dirLight.position.set(15, 25, -15);
+        const dirLight = new THREE.DirectionalLight(0xffb87a, 1.8); 
+        dirLight.position.set(12, 30, -10);
         dirLight.castShadow = true;
         dirLight.shadow.mapSize.width = 2048;
         dirLight.shadow.mapSize.height = 2048;
-        dirLight.shadow.bias = -0.001;
         this.scene.add(dirLight);
 
-        const spotLight = new THREE.SpotLight(0xff8833, 0.8, 100);
-        spotLight.position.set(0, 10, 0);
-        this.scene.add(spotLight);
+        const pointLight = new THREE.PointLight(0xff9944, 1.2, 100);
+        pointLight.position.set(0, 15, 0);
+        this.scene.add(pointLight);
     }
 
     createEnvironment() {
         textures.table.wrapS = THREE.RepeatWrapping; textures.table.wrapT = THREE.RepeatWrapping;
-        textures.table.repeat.set(8, 8); 
-        const tableMat = new THREE.MeshStandardMaterial({ map: textures.table, color: 0xffffff, roughness: 1 });
-        const tableTop = new THREE.Mesh(new THREE.BoxGeometry(70, 1, 50), tableMat);
-        tableTop.position.set(0, -0.5, 0);
-        tableTop.receiveShadow = true;
-        this.scene.add(tableTop);
+        textures.table.repeat.set(6, 6); 
+        
+        textures.tableSide.wrapS = THREE.RepeatWrapping; textures.tableSide.wrapT = THREE.RepeatWrapping;
+        textures.tableSide.repeat.set(4, 1);
+
+        const tableTopMat = new THREE.MeshStandardMaterial({ map: textures.table, color: 0xffffff, roughness: 0.9 });
+        const tableSideMat = new THREE.MeshStandardMaterial({ map: textures.tableSide, color: 0xffffff, roughness: 0.9 });
+        
+        const tableMaterials = [tableSideMat, tableSideMat, tableTopMat, tableSideMat, tableSideMat, tableSideMat];
+        const table = new THREE.Mesh(new THREE.BoxGeometry(70, 2, 50), tableMaterials);
+        table.position.set(0, -1, 0);
+        table.receiveShadow = true;
+        this.scene.add(table);
 
         const legGeo = new THREE.BoxGeometry(3, 15, 3);
         const legPositions = [ [-32, -8, -22], [32, -8, -22], [-32, -8, 22], [32, -8, 22] ];
         legPositions.forEach(pos => {
-            const leg = new THREE.Mesh(legGeo, tableMat);
+            const leg = new THREE.Mesh(legGeo, tableSideMat);
             leg.position.set(...pos);
             leg.castShadow = true;
             leg.receiveShadow = true;
@@ -350,10 +506,8 @@ class Game3D {
         });
 
         textures.roomWall.wrapS = THREE.RepeatWrapping; textures.roomWall.wrapT = THREE.RepeatWrapping;
-        textures.roomWall.repeat.set(6, 6); 
-        const roomMat = new THREE.MeshStandardMaterial({ 
-            map: textures.roomWall, color: 0xc29b70, roughness: 1, side: THREE.BackSide 
-        });
+        textures.roomWall.repeat.set(5, 5); 
+        const roomMat = new THREE.MeshStandardMaterial({ map: textures.roomWall, color: 0xddbb99, roughness: 1, side: THREE.BackSide });
         
         const room = new THREE.Mesh(new THREE.BoxGeometry(150, 80, 150), roomMat);
         room.position.y = 20;
@@ -368,22 +522,8 @@ class Game3D {
 
     createBoard() {
         const boardGroup = new THREE.Group();
-        const baseMat = new THREE.MeshStandardMaterial({ color: 0x8a5a3a, roughness: 0.9 }); 
-
-        for(let r=0; r<3; r++) {
-            for(let c=0; c<8; c++) {
-                if((r==0||r==2) && (c==4||c==5)) continue;
-                const geo = new THREE.BoxGeometry(CONFIG.cx, 1.2, CONFIG.cz); 
-                const tile = new THREE.Mesh(geo, baseMat);
-                tile.position.set((c - 3.5) * CONFIG.cx, 0.6, (r - 1) * CONFIG.cz);
-                tile.receiveShadow = true; tile.castShadow = true;
-                const edges = new THREE.EdgesGeometry(geo);
-                const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x4a2a1a, linewidth: 1 }));
-                tile.add(line);
-                boardGroup.add(tile);
-            }
-        }
-
+        
+        // 🚨 إنشاء الخشبة ككتلة واحدة لمنع تقطيع الصورة 🚨
         const cx = CONFIG.cx;
         const cz = CONFIG.cz;
         const shape = new THREE.Shape();
@@ -402,23 +542,38 @@ class Game3D {
         shape.lineTo(-4 * cx,  1.5 * cz);
         shape.lineTo(-4 * cx, -1.5 * cz);
 
-        const topGeo = new THREE.ShapeGeometry(shape);
-        topGeo.computeBoundingBox();
-        const bbox = topGeo.boundingBox;
-        const uvAttribute = topGeo.attributes.uv;
-        for (let i = 0; i < uvAttribute.count; i++) {
-            const u = (topGeo.attributes.position.getX(i) - bbox.min.x) / (bbox.max.x - bbox.min.x);
-            const v = (topGeo.attributes.position.getY(i) - bbox.min.y) / (bbox.max.y - bbox.min.y);
-            uvAttribute.setXY(i, u, v);
-        }
+        // إكسترود (تجسيم) الخشبة لأسفل
+        const extrudeSettings = { depth: 1.2, bevelEnabled: false };
+        const boardGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
 
-        const topMat = new THREE.MeshStandardMaterial({ map: textures.boardTex, roughness: 0.5, color: 0xffffff });
-        const topMesh = new THREE.Mesh(topGeo, topMat);
+        // تكرار متواصل لصورة الجوانب لتلف حول اللعبة
+        textures.boardSide.wrapS = THREE.RepeatWrapping;
+        textures.boardSide.wrapT = THREE.RepeatWrapping;
+        textures.boardSide.repeat.set(12, 1); 
+
+        const topMat = new THREE.MeshStandardMaterial({ map: textures.boardTex, color: 0xffffff, roughness: 0.6 });
+        const sideMat = new THREE.MeshStandardMaterial({ map: textures.boardSide, color: 0xdddddd, roughness: 0.8 });
         
-        topMesh.rotation.x = -Math.PI / 2;
-        topMesh.position.y = 1.205; 
-        topMesh.receiveShadow = true;
-        boardGroup.add(topMesh);
+        // ربط الخامات (الأول للسطح، والثاني للجوانب)
+        const boardMesh = new THREE.Mesh(boardGeo, [topMat, sideMat]);
+        boardMesh.rotation.x = Math.PI / 2; // تسطيحها لتجلس على الطاولة
+        boardMesh.position.y = 1.2; // رفعها لتكون فوق الطاولة
+        boardMesh.receiveShadow = true;
+        boardMesh.castShadow = true;
+        boardGroup.add(boardMesh);
+
+        // رسم خطوط المربعات فقط (بدون خامات مربعة مقطعة)
+        const lineMat = new THREE.LineBasicMaterial({ color: 0x4a2a1a, linewidth: 2 });
+        for(let r=0; r<3; r++) {
+            for(let c=0; c<8; c++) {
+                if((r==0||r==2) && (c==4||c==5)) continue;
+                const sqGeo = new THREE.BoxGeometry(cx, 1.2, cz); 
+                const edges = new THREE.EdgesGeometry(sqGeo);
+                const line = new THREE.LineSegments(edges, lineMat);
+                line.position.set((c - 3.5) * cx, 0.6, (r - 1) * cz);
+                boardGroup.add(line);
+            }
+        }
 
         this.scene.add(boardGroup);
         this.initPieces();
@@ -529,8 +684,7 @@ class Game3D {
         const log = document.getElementById('chat-log');
         const entry = document.createElement('div');
         entry.className = 'log-entry';
-        const time = new Date().toLocaleTimeString('en-US', { hour12: false });
-        entry.innerHTML = `<span style="color:#d4af37">[${time}]</span> ${msg}`;
+        entry.innerHTML = msg;
         log.appendChild(entry);
         if(log.children.length > 3) log.removeChild(log.firstChild);
     }
@@ -541,7 +695,8 @@ class Game3D {
         this.selectedPieceId = null; 
         if(this.guideMesh) this.guideMesh.visible = false;
         
-        document.getElementById('roll-btn-container').classList.add('disabled');
+        const btn = document.getElementById('btn-roll');
+        btn.classList.add('disabled');
         playSFX('dice');
 
         let val = 0;
@@ -558,21 +713,21 @@ class Game3D {
 
         await Promise.all(anims);
         this.rollValue = val;
-        this.logChat(`النتيجة: <b>${val}</b> خطوات`);
+        this.logChat(`Rolled: <b>${val}</b>`);
 
         if(val === 0) {
             setTimeout(() => this.switchTurn(), 1000);
         } else {
             const moves = this.getPossibleMoves(this.turn);
             if(moves.length === 0) {
-                this.logChat("لا توجد حركات متاحة.");
+                this.logChat("No moves available.");
                 setTimeout(() => this.switchTurn(), 1000);
             } else if(this.turn === 2 && this.mode === 'BOT') {
                 setTimeout(() => this.aiMove(moves), 1000);
             } else {
                 this.isLocked = false;
                 this.highlightValidPieces(moves);
-                this.logChat("اختر حجراً للتحريك");
+                this.logChat("Select a piece to move");
             }
         }
     }
@@ -683,6 +838,7 @@ class Game3D {
                 } else {
                     this.selectedPieceId = obj.userData.id;
                     this.drawGuideLine(obj);
+                    this.logChat("Tap again to confirm");
                 }
             } else {
                 this.selectedPieceId = null;
@@ -726,13 +882,13 @@ class Game3D {
                     const oppPiece = this.pieces.find(p => p.userData.player !== player && p.userData.id === capturedIdx);
                     gsap.to(oppPiece.position, { x: -6 + (capturedIdx*2), y: 0.25, z: player === 1 ? -5.5 : 5.5, duration: 0.6, ease: "bounce.out" });
                     oppPiece.userData.baseY = 0.25; 
-                    this.logChat("⚔️ تم أسر حجر الخصم!");
+                    this.logChat("⚔️ Enemy piece captured!");
                 }
             }
 
             const isRosette = (path[newPosIdx][0]===0&&path[newPosIdx][1]===0)||(path[newPosIdx][0]===0&&path[newPosIdx][1]===6)||(path[newPosIdx][0]===1&&path[newPosIdx][1]===3)||(path[newPosIdx][0]===2&&path[newPosIdx][1]===0)||(path[newPosIdx][0]===2&&path[newPosIdx][1]===6);
             if(isRosette) {
-                this.logChat("🌸 وردة! ارمِ النرد مجدداً.");
+                this.logChat("🌸 Rosette! Roll again.");
                 this.resetForNextRoll();
                 if(this.turn === 2 && this.mode === 'BOT') {
                     setTimeout(() => this.rollDice(), 1500); 
@@ -742,7 +898,7 @@ class Game3D {
         } else {
             gsap.to(pieceObj.position, { x: 14, y: 0.25, duration: 0.6 });
             pieceObj.userData.baseY = 0.25;
-            this.logChat("🏁 حجر وصل بأمان!");
+            this.logChat("🏁 Piece secured!");
             this.updateScore();
         }
 
@@ -754,6 +910,9 @@ class Game3D {
     switchTurn() {
         this.turn = this.turn === 1 ? 2 : 1;
         this.resetForNextRoll();
+        
+        document.getElementById('img-turn').src = this.turn === 1 ? UI_ASSETS.turnP1 : UI_ASSETS.turnP2;
+
         if(this.turn === 2 && this.mode === 'BOT') setTimeout(() => this.rollDice(), 1500); 
     }
 
@@ -762,14 +921,14 @@ class Game3D {
         this.rollValue = 0;
         this.selectedPieceId = null;
         
-        const btn = document.getElementById('roll-btn-container');
-        if(this.turn === 1) {
-            btn.classList.remove('disabled');
-            document.getElementById('status-bar').innerText = "دورك للعب";
-        } else {
+        const btn = document.getElementById('btn-roll');
+        
+        if(this.mode === 'BOT' && this.turn === 2) {
             btn.classList.add('disabled');
-            document.getElementById('status-bar').innerText = this.mode === 'BOT' ? "الكمبيوتر يفكر..." : "دور الخصم";
+        } else {
+            btn.classList.remove('disabled');
         }
+        
         this.clearHighlights();
     }
 
@@ -779,8 +938,6 @@ class Game3D {
         
         document.getElementById('s1').innerText = s1;
         document.getElementById('s2').innerText = s2;
-
-        if(s1 === 7 || s2 === 7) document.getElementById('status-bar').innerText = s1 === 7 ? "🎉 اللازورد ينتصر!" : "🎉 العقيق ينتصر!";
     }
 
     animate() {
@@ -793,7 +950,6 @@ class Game3D {
 
 let game;
 let savedMode = 'PVP';
-let isMusicMuted = false;
 
 function startCinematicIntro(mode) {
     savedMode = mode;
@@ -821,14 +977,12 @@ function endCinematicIntro() {
     if (audioCtx.state === 'suspended') audioCtx.resume();
     
     const audio = document.getElementById('bg-music');
-    if(!isMusicMuted) {
-        audio.volume = parseFloat(document.getElementById('volume-slider').value); 
-        let playPromise = audio.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                window.addEventListener('pointerdown', () => audio.play(), { once: true });
-            });
-        }
+    audio.volume = parseFloat(document.getElementById('bgm-slider').value); 
+    let playPromise = audio.play();
+    if (playPromise !== undefined) {
+        playPromise.catch(error => {
+            window.addEventListener('pointerdown', () => audio.play(), { once: true });
+        });
     }
 
     game.isCinematic = false;
@@ -852,33 +1006,12 @@ function endCinematicIntro() {
     });
 }
 
-function openSettings() { document.getElementById('settings-menu').style.display = 'flex'; }
-function closeSettings() { document.getElementById('settings-menu').style.display = 'none'; }
-
-function updateMusicVolume(val) {
-    document.getElementById('bg-music').volume = parseFloat(val);
-}
-
-function toggleMusic() {
-    const bgMusic = document.getElementById('bg-music');
-    const muteBtn = document.getElementById('mute-btn');
-    
-    isMusicMuted = !isMusicMuted;
-    bgMusic.muted = isMusicMuted;
-    
-    if(isMusicMuted) {
-        muteBtn.innerText = "تشغيل الموسيقى 🔇";
-        muteBtn.className = "settings-btn danger";
-    } else {
-        muteBtn.innerText = "إيقاف الموسيقى 🔊";
-        muteBtn.className = "settings-btn music-toggle";
-    }
-}
-
 function restartGame() {
     closeSettings();
     document.getElementById('ui-layer').style.display = 'none';
-    game = new Game3D(savedMode, true); 
+    if (game) {
+        game = new Game3D(savedMode, true); 
+    }
     endCinematicIntro(); 
     document.getElementById('s1').innerText = "0";
     document.getElementById('s2').innerText = "0";
