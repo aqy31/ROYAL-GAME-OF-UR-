@@ -1,7 +1,12 @@
 const CACHE_NAME = 'ur-game-v1';
+
+// هنا حطينا كل ملفاتك عشان تنحفظ أوفلاين
 const ASSETS = [
     './',
     './index.html',
+    'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js',
     './board.png', './board_side.png', './table.png', './table_side.png',
     './blue.png', './red.png', './dice.png', './tray.png', './wall.png',
     './bg.png', './btn1.png', './btn2.png', './btn3.png', './btn4.png',
@@ -25,6 +30,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
     event.respondWith(
         caches.match(event.request).then((response) => {
+            // إذا الملف موجود بالذاكرة يفتحه أوفلاين، وإلا يحمله من النت
             return response || fetch(event.request);
         })
     );
