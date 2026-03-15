@@ -47,7 +47,7 @@
             position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 120; pointer-events: auto;
         }
         .settings-box {
-            background-image: url('set_bg.PNG'); 
+            background-image: url('set_bg.png'); 
             background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
             padding: 50px 40px; display: flex; flex-direction: column; align-items: center; gap: 15px; 
             width: 85vw; max-width: 500px; max-height: 85vh; overflow-y: auto; box-sizing: border-box;
@@ -59,16 +59,16 @@
         }
         input[type=range]:focus { outline: none; }
         input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 20px; background: url('slider_track.PNG') center/100% 100% no-repeat; border: none; border-radius: 10px;
+            width: 100%; height: 20px; background: url('slider_track.png') center/100% 100% no-repeat; border: none; border-radius: 10px;
         }
         input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 40px; width: 40px; background: url('slider_thumb.PNG') center/contain no-repeat; margin-top: -10px; 
+            -webkit-appearance: none; height: 40px; width: 40px; background: url('slider_thumb.png') center/contain no-repeat; margin-top: -10px; 
         }
         input[type=range]::-moz-range-track {
-            width: 100%; height: 20px; background: url('slider_track.PNG') center/100% 100% no-repeat; border: none;
+            width: 100%; height: 20px; background: url('slider_track.png') center/100% 100% no-repeat; border: none;
         }
         input[type=range]::-moz-range-thumb {
-            height: 40px; width: 40px; background: url('slider_thumb.PNG') center/contain no-repeat; border: none;
+            height: 40px; width: 40px; background: url('slider_thumb.png') center/contain no-repeat; border: none;
         }
         
         .flex-row { display: flex; gap: 10px; align-items: center; justify-content: center; width: 100%; flex-direction: column;}
@@ -163,7 +163,7 @@
             <span class="score-num" id="s2">0</span>
         </div>
 
-        <img id="in-game-settings-btn" src="set_icon.PNG" onclick="playClickSound(); openSettings();" alt="">
+        <img id="in-game-settings-btn" src="set_icon.png" onclick="playClickSound(); openSettings();" alt="">
     </div>
     
     <div id="bottom-bar">
@@ -181,36 +181,36 @@
 
 <div id="settings-menu">
     <div class="settings-box">
-        <img id="img-set-title" src="set_title.PNG" alt="" style="width: 250px; height: auto; margin-bottom: 5px;">
+        <img id="img-set-title" src="set_title.png" alt="" style="width: 250px; height: auto; margin-bottom: 5px;">
         
         <div class="slider-container">
-            <img id="img-set-music" src="set_music.PNG" alt="" style="width: 160px; height: auto; margin: 0 auto 5px auto; display: block;">
+            <img id="img-set-music" src="set_music.png" alt="" style="width: 160px; height: auto; margin: 0 auto 5px auto; display: block;">
             <div class="flex-row">
                 <input type="range" id="bgm-slider" min="0" max="1" step="0.05" value="0.4" oninput="updateBGM(this.value)">
             </div>
         </div>
         
         <div class="slider-container">
-            <img id="img-set-sfx" src="set_sfx.PNG" alt="" style="width: 160px; height: auto; margin: 0 auto 5px auto; display: block;">
+            <img id="img-set-sfx" src="set_sfx.png" alt="" style="width: 160px; height: auto; margin: 0 auto 5px auto; display: block;">
             <div class="flex-row">
                 <input type="range" id="sfx-slider" min="0" max="1" step="0.05" value="1.0" oninput="updateSFX(this.value)">
             </div>
         </div>
 
         <div style="display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 15px;">
-            <img id="img-set-resume" src="set_resume.PNG" class="img-btn" style="width: 220px;" onclick="playClickSound(); closeSettings();" alt="">
-            <img id="img-set-restart" src="set_restart.PNG" class="img-btn" style="width: 220px;" onclick="playClickSound(); restartGame();" alt="">
-            <img id="img-set-exit" src="set_exit.PNG" class="img-btn" style="width: 220px;" onclick="playClickSound(); exitGame();" alt="">
+            <img id="img-set-resume" src="set_resume.png" class="img-btn" style="width: 220px;" onclick="playClickSound(); closeSettings();" alt="">
+            <img id="img-set-restart" src="set_restart.png" class="img-btn" style="width: 220px;" onclick="playClickSound(); restartGame();" alt="">
+            <img id="img-set-exit" src="set_exit.png" class="img-btn" style="width: 220px;" onclick="playClickSound(); exitGame();" alt="">
         </div>
     </div>
 </div>
 
 <div id="launcher">
     <div class="menu-buttons">
-        <img id="btn-pvp" src="btn1.PNG" class="img-btn" onclick="playClickSound(); startCinematicIntro('PVP');" alt="">
-        <img id="btn-online" src="btn2.PNG" class="img-btn" onclick="playClickSound(); alert('Online multiplayer coming soon!');" alt="">
-        <img id="btn-bot" src="btn3.PNG" class="img-btn" onclick="playClickSound(); startCinematicIntro('BOT');" alt="">
-        <img id="btn-settings" src="btn4.PNG" class="img-btn" onclick="playClickSound(); openSettings();" alt="">
+        <img id="btn-pvp" src="btn1.png" class="img-btn" onclick="playClickSound(); startCinematicIntro('PVP');" alt="">
+        <img id="btn-online" src="btn2.png" class="img-btn" onclick="playClickSound(); alert('Online multiplayer coming soon!');" alt="">
+        <img id="btn-bot" src="btn3.png" class="img-btn" onclick="playClickSound(); startCinematicIntro('BOT');" alt="">
+        <img id="btn-settings" src="btn4.png" class="img-btn" onclick="playClickSound(); openSettings();" alt="">
     </div>
 
     <div id="footer">
@@ -232,7 +232,7 @@
 </div>
 
 <script>
-// 🚨 ربط التطبيق (PWA) للعمل بدون إنترنت 🚨
+// PWA
 const manifest = {
     "name": "Royal Game of Ur",
     "short_name": "Ur Game",
@@ -251,31 +251,12 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// الروابط
-const DESIGN_ASSETS = {
-    boardTex: 'board.PNG',
-    boardSideTex: 'board_side.PNG', 
-    mainMenuBackground: 'wall.png',
-    roomWallTexture: 'wall.png',
-    mainTable: 'table.png',
-    tableSideTex: 'table_side.png', 
-    trayTexture: 'tray.PNG',
-    pieceBlue: 'blue.PNG',
-    pieceRed: 'red.PNG', 
-    diceTex: 'dice.png',
-    clayTabletTex: 'clay.png', 
-    bgMusic: 'music.mp3',
-    diceSound: 'dice.mp3', 
-    moveSound: 'move.mp3'  
-};
-
 document.getElementById('launcher').style.backgroundImage = `url('bg.png')`;
-document.getElementById('bg-music').src = DESIGN_ASSETS.bgMusic;
+document.getElementById('bg-music').src = 'music.mp3';
 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 const audioBuffers = {};
-
 let sfxVolume = 1.0;
 
 async function loadSFX(id, url) {
@@ -287,14 +268,13 @@ async function loadSFX(id, url) {
     } catch (err) {}
 }
 
-loadSFX('dice', DESIGN_ASSETS.diceSound);
-loadSFX('move', DESIGN_ASSETS.moveSound);
+loadSFX('dice', 'dice.mp3');
+loadSFX('move', 'move.mp3');
 loadSFX('click', 'click.mp3'); 
 
 function playSFX(id) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
     if (sfxVolume <= 0) return;
-
     if (audioBuffers[id]) {
         const source = audioCtx.createBufferSource();
         source.buffer = audioBuffers[id];
@@ -324,18 +304,17 @@ function closeSettings() { document.getElementById('settings-menu').style.displa
 
 const textureLoader = new THREE.TextureLoader();
 
-// 🚨 تحميل خامات الـ 3D بحروف مطابقة لملفاتك 🚨
+// جميع الخامات بصيغة حروف صغيرة .png
 const textures = {
-    boardTex: textureLoader.load(DESIGN_ASSETS.boardTex),
-    boardSide: textureLoader.load(DESIGN_ASSETS.boardSideTex), 
-    table: textureLoader.load(DESIGN_ASSETS.mainTable),
-    tableSide: textureLoader.load(DESIGN_ASSETS.tableSideTex), 
-    pieceBlue: textureLoader.load(DESIGN_ASSETS.pieceBlue),
-    pieceRed: textureLoader.load(DESIGN_ASSETS.pieceRed),
-    dice: textureLoader.load(DESIGN_ASSETS.diceTex),
-    tray: textureLoader.load(DESIGN_ASSETS.trayTexture),
-    clay: textureLoader.load(DESIGN_ASSETS.clayTabletTex),
-    roomWall: textureLoader.load(DESIGN_ASSETS.roomWallTexture)
+    boardTex: textureLoader.load('board.png'),
+    boardSide: textureLoader.load('board_side.png'), 
+    table: textureLoader.load('table.png'),
+    tableSide: textureLoader.load('table_side.png'), 
+    pieceBlue: textureLoader.load('blue.png'),
+    pieceRed: textureLoader.load('red.png'),
+    dice: textureLoader.load('dice.png'),
+    tray: textureLoader.load('tray.png'),
+    roomWall: textureLoader.load('wall.png')
 };
 
 const canvas = document.createElement('canvas');
@@ -354,8 +333,8 @@ const PATHS = {
 class Game3D {
     constructor(mode, isCinematic = false) {
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color('#0a0a0a'); // لون خلفية مريح للعين
-        this.scene.fog = new THREE.FogExp2('#0a0a0a', 0.015);
+        this.scene.background = new THREE.Color('#1a0f08'); 
+        this.scene.fog = new THREE.FogExp2('#1a0f08', 0.015);
         
         this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -383,7 +362,6 @@ class Game3D {
         this.createEnvironment();
         this.createBoard();
         this.createDiceAndTray();
-        this.createDecorations();
         this.createThickGuideLine();
         this.animate();
 
@@ -422,24 +400,23 @@ class Game3D {
         }
         document.body.appendChild(this.renderer.domElement);
 
-        // 🚨 الإضاءة البيضاء الصافية المريحة للعين (تحل مشكلة اللون المحروق) 🚨
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); 
+        const ambientLight = new THREE.AmbientLight(0xffecd4, 0.6); 
         this.scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.0); 
-        dirLight.position.set(15, 30, -10);
+        const dirLight = new THREE.DirectionalLight(0xffa050, 1.5); 
+        dirLight.position.set(15, 25, -15);
         dirLight.castShadow = true;
-        dirLight.shadow.mapSize.width = 2048;
-        dirLight.shadow.mapSize.height = 2048;
         this.scene.add(dirLight);
 
-        const spotLight = new THREE.SpotLight(0xffffff, 0.5, 100);
-        spotLight.position.set(0, 15, 0);
+        const spotLight = new THREE.SpotLight(0xff8833, 0.8, 100);
+        spotLight.position.set(0, 10, 0);
         this.scene.add(spotLight);
     }
 
     createEnvironment() {
-        // 🚨 الطاولة خامة واحدة بدون تقطيع مربعات 🚨
+        textures.table.wrapS = THREE.RepeatWrapping; textures.table.wrapT = THREE.RepeatWrapping;
+        textures.table.repeat.set(6, 6); 
+
         const tableTopMat = new THREE.MeshStandardMaterial({ map: textures.table, color: 0xffffff, roughness: 0.9 });
         
         const table = new THREE.Mesh(new THREE.BoxGeometry(70, 2, 50), tableTopMat);
@@ -510,7 +487,9 @@ class Game3D {
             }
         }
 
-        // 🚨 جوانب الخشبة تلتف كشريط واحد 🚨
+        textures.boardSide.wrapS = THREE.RepeatWrapping;
+        textures.boardSide.repeat.set(12, 1);
+
         const topMat = new THREE.MeshStandardMaterial({ map: textures.boardTex, color: 0xffffff, roughness: 0.6 });
         const sideMat = new THREE.MeshStandardMaterial({ map: textures.boardSide, color: 0xffffff, roughness: 0.8 }); 
         
@@ -591,10 +570,6 @@ class Game3D {
             this.scene.add(die);
             this.diceModels.push(die);
         }
-    }
-
-    createDecorations() {
-        // 🚨 تم حذف الرقيم الطيني بناءً على طلبك 🚨
     }
 
     createThickGuideLine() {
