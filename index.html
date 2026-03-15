@@ -47,14 +47,13 @@
             position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 120; pointer-events: auto;
         }
         .settings-box {
-            background-image: url('set_bg.PNG'); 
+            background-image: url('set_bg.png'); 
             background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
             padding: 40px; display: flex; flex-direction: column; align-items: center; gap: 15px; 
             width: 85vw; max-width: 500px; max-height: 85vh; overflow-y: auto; box-sizing: border-box;
         }
         .slider-container { width: 100%; text-align: center; margin-bottom: 10px;}
         
-        /* 🚨 صور الإعدادات صارت قابلة للضغط 🚨 */
         .toggle-img { cursor: pointer; transition: transform 0.2s; pointer-events: auto; }
         .toggle-img:hover { transform: scale(1.05); }
 
@@ -63,16 +62,16 @@
         }
         input[type=range]:focus { outline: none; }
         input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 20px; background: url('slider_track.PNG') center/100% 100% no-repeat; border: none; border-radius: 10px;
+            width: 100%; height: 20px; background: url('slider_track.png') center/100% 100% no-repeat; border: none; border-radius: 10px;
         }
         input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 40px; width: 40px; background: url('slider_thumb.PNG') center/contain no-repeat; margin-top: -10px; 
+            -webkit-appearance: none; height: 40px; width: 40px; background: url('slider_thumb.png') center/contain no-repeat; margin-top: -10px; 
         }
         input[type=range]::-moz-range-track {
-            width: 100%; height: 20px; background: url('slider_track.PNG') center/100% 100% no-repeat; border: none;
+            width: 100%; height: 20px; background: url('slider_track.png') center/100% 100% no-repeat; border: none;
         }
         input[type=range]::-moz-range-thumb {
-            height: 40px; width: 40px; background: url('slider_thumb.PNG') center/contain no-repeat; border: none;
+            height: 40px; width: 40px; background: url('slider_thumb.png') center/contain no-repeat; border: none;
         }
         
         .flex-row { display: flex; gap: 10px; align-items: center; justify-content: center; width: 100%; flex-direction: column;}
@@ -133,7 +132,6 @@
             display: none; z-index: 50; pointer-events: none; opacity: 0;
         }
 
-        /* 🚨 تحسينات الموبايل الجذرية 🚨 */
         @media (max-width: 768px) {
             #top-ui { padding: 10px; top: 5px; }
             .score-box { padding: 5px; min-width: 60px; }
@@ -145,7 +143,6 @@
             .company-logo { height: 28px; }
             #img-turn { height: 30px !important; }
             
-            /* تصغير المربع والأزرار ليناسب شاشة الموبايل تماماً */
             .settings-box { width: 90vw; padding: 30px 20px; gap: 10px; }
             #img-set-title { width: 180px !important; }
             .slider-container img { width: 120px !important; }
@@ -173,7 +170,7 @@
             <span class="score-num" id="s2">0</span>
         </div>
 
-        <img id="in-game-settings-btn" src="set_icon.PNG" onclick="playClickSound(); openSettings();" alt="">
+        <img id="in-game-settings-btn" src="set_icon.png" onclick="playClickSound(); openSettings();" alt="">
     </div>
     
     <div id="bottom-bar">
@@ -191,36 +188,36 @@
 
 <div id="settings-menu">
     <div class="settings-box">
-        <img id="img-set-title" src="set_title.PNG" alt="" style="width: 220px; height: auto; margin-bottom: 5px;">
+        <img id="img-set-title" src="set_title.png" alt="" style="width: 220px; height: auto; margin-bottom: 5px;">
         
         <div class="slider-container">
-            <img id="img-set-music" src="set_music.PNG" alt="" class="toggle-img" style="width: 140px; height: auto; margin: 0 auto 5px auto; display: block;" onclick="toggleMusic()">
+            <img id="img-set-music" src="set_music.png" alt="" class="toggle-img" style="width: 140px; height: auto; margin: 0 auto 5px auto; display: block;" onclick="toggleMusic()">
             <div class="flex-row">
                 <input type="range" id="bgm-slider" min="0" max="1" step="0.05" value="0.4" oninput="updateBGM(this.value)">
             </div>
         </div>
         
         <div class="slider-container">
-            <img id="img-set-sfx" src="set_sfx.PNG" alt="" class="toggle-img" style="width: 140px; height: auto; margin: 0 auto 5px auto; display: block;" onclick="toggleSFX()">
+            <img id="img-set-sfx" src="set_sfx.png" alt="" class="toggle-img" style="width: 140px; height: auto; margin: 0 auto 5px auto; display: block;" onclick="toggleSFX()">
             <div class="flex-row">
                 <input type="range" id="sfx-slider" min="0" max="1" step="0.05" value="1.0" oninput="updateSFX(this.value)">
             </div>
         </div>
 
         <div style="display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 10px;">
-            <img id="img-set-resume" src="set_resume.PNG" class="img-btn" onclick="playClickSound(); closeSettings();" alt="">
-            <img id="img-set-restart" src="set_restart.PNG" class="img-btn" onclick="playClickSound(); restartGame();" alt="">
-            <img id="img-set-exit" src="set_exit.PNG" class="img-btn" onclick="playClickSound(); exitGame();" alt="">
+            <img id="img-set-resume" src="set_resume.png" class="img-btn" onclick="playClickSound(); closeSettings();" alt="">
+            <img id="img-set-restart" src="set_restart.png" class="img-btn" onclick="playClickSound(); restartGame();" alt="">
+            <img id="img-set-exit" src="set_exit.png" class="img-btn" onclick="playClickSound(); exitGame();" alt="">
         </div>
     </div>
 </div>
 
 <div id="launcher">
     <div class="menu-buttons">
-        <img id="btn-pvp" src="btn1.PNG" class="img-btn" onclick="playClickSound(); startCinematicIntro('PVP');" alt="">
-        <img id="btn-online" src="btn2.PNG" class="img-btn" onclick="playClickSound(); alert('Online multiplayer coming soon!');" alt="">
-        <img id="btn-bot" src="btn3.PNG" class="img-btn" onclick="playClickSound(); startCinematicIntro('BOT');" alt="">
-        <img id="btn-settings" src="btn4.PNG" class="img-btn" onclick="playClickSound(); openSettings();" alt="">
+        <img id="btn-pvp" src="btn1.png" class="img-btn" onclick="playClickSound(); startCinematicIntro('PVP');" alt="">
+        <img id="btn-online" src="btn2.png" class="img-btn" onclick="playClickSound(); alert('Online multiplayer coming soon!');" alt="">
+        <img id="btn-bot" src="btn3.png" class="img-btn" onclick="playClickSound(); startCinematicIntro('BOT');" alt="">
+        <img id="btn-settings" src="btn4.png" class="img-btn" onclick="playClickSound(); openSettings();" alt="">
     </div>
 
     <div id="footer">
@@ -268,7 +265,6 @@ const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 const audioBuffers = {};
 
-// 🚨 نظام الصوت الجديد مع الكتم 🚨
 let sfxVolume = 1.0;
 let lastMusicVol = 0.4;
 let lastSfxVol = 1.0;
@@ -314,7 +310,6 @@ function updateSFX(val) {
     if (sfxVolume > 0) lastSfxVol = sfxVolume;
 }
 
-// 🚨 دوال كتم وتشغيل الصوت عبر الضغط على الصورة 🚨
 function toggleMusic() {
     const audio = document.getElementById('bg-music');
     const slider = document.getElementById('bgm-slider');
@@ -358,13 +353,13 @@ function closeSettings() { document.getElementById('settings-menu').style.displa
 const textureLoader = new THREE.TextureLoader();
 
 const textures = {
-    boardTex: textureLoader.load('board.PNG'),
-    boardSide: textureLoader.load('board_side.PNG'), 
+    boardTex: textureLoader.load('board.png'),
+    boardSide: textureLoader.load('board_side.png'), 
     table: textureLoader.load('table.png'),
-    pieceBlue: textureLoader.load('blue.PNG'),
-    pieceRed: textureLoader.load('red.PNG'),
+    pieceBlue: textureLoader.load('blue.png'),
+    pieceRed: textureLoader.load('red.png'),
     dice: textureLoader.load('dice.png'),
-    tray: textureLoader.load('tray.PNG'),
+    tray: textureLoader.load('tray.png'),
     roomWall: textureLoader.load('wall.png')
 };
 
@@ -465,7 +460,9 @@ class Game3D {
     }
 
     createEnvironment() {
-        // 🚨 الطاولة صارت قطعة وحدة ومو مربعات 🚨
+        textures.table.wrapS = THREE.RepeatWrapping; textures.table.wrapT = THREE.RepeatWrapping;
+        textures.table.repeat.set(6, 6); 
+
         const tableTopMat = new THREE.MeshStandardMaterial({ map: textures.table, color: 0xffffff, roughness: 0.9 });
         
         const table = new THREE.Mesh(new THREE.BoxGeometry(70, 2, 50), tableTopMat);
@@ -535,6 +532,9 @@ class Game3D {
                 uvAttribute.setXY(i, u, v);
             }
         }
+
+        textures.boardSide.wrapS = THREE.RepeatWrapping;
+        textures.boardSide.repeat.set(12, 1);
 
         const topMat = new THREE.MeshStandardMaterial({ map: textures.boardTex, color: 0xffffff, roughness: 0.6 });
         const sideMat = new THREE.MeshStandardMaterial({ map: textures.boardSide, color: 0xffffff, roughness: 0.8 }); 
@@ -658,8 +658,6 @@ class Game3D {
 
         await Promise.all(anims);
         this.rollValue = val;
-        
-        // بدون إيموجي
         this.logChat(`Rolled: <b>${val}</b>`);
 
         if(val === 0) {
@@ -829,14 +827,12 @@ class Game3D {
                     const oppPiece = this.pieces.find(p => p.userData.player !== player && p.userData.id === capturedIdx);
                     gsap.to(oppPiece.position, { x: -6 + (capturedIdx*2), y: 0.25, z: player === 1 ? -5.5 : 5.5, duration: 0.6, ease: "bounce.out" });
                     oppPiece.userData.baseY = 0.25; 
-                    // بدون إيموجي
                     this.logChat("Enemy piece captured!");
                 }
             }
 
             const isRosette = (path[newPosIdx][0]===0&&path[newPosIdx][1]===0)||(path[newPosIdx][0]===0&&path[newPosIdx][1]===6)||(path[newPosIdx][0]===1&&path[newPosIdx][1]===3)||(path[newPosIdx][0]===2&&path[newPosIdx][1]===0)||(path[newPosIdx][0]===2&&path[newPosIdx][1]===6);
             if(isRosette) {
-                // بدون إيموجي
                 this.logChat("Rosette! Roll again.");
                 this.resetForNextRoll();
                 if(this.turn === 2 && this.mode === 'BOT') {
@@ -847,7 +843,6 @@ class Game3D {
         } else {
             gsap.to(pieceObj.position, { x: 14, y: 0.25, duration: 0.6 });
             pieceObj.userData.baseY = 0.25;
-            // بدون إيموجي
             this.logChat("Piece secured!");
             this.updateScore();
         }
