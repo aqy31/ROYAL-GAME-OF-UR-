@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#050505">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="manifest" id="manifest-link">
+    
     <title>Royal Game of Ur - Pro Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -15,7 +21,7 @@
         }
         canvas { background: transparent !important; display: block; touch-action: none; outline: none; }
         
-        img { border: none; background: transparent; -webkit-user-drag: none; color: transparent; }
+        img { border: none; background: transparent; -webkit-user-drag: none; }
 
         #ui-layer { position: absolute; inset: 0; pointer-events: none; z-index: 10; display: none; } 
         .interactive { pointer-events: auto; }
@@ -41,7 +47,7 @@
             position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 120; pointer-events: auto;
         }
         .settings-box {
-            background-image: url('set_bg.png'); 
+            background-image: url('set_bg.PNG'); 
             background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
             padding: 50px 40px; display: flex; flex-direction: column; align-items: center; gap: 15px; 
             width: 85vw; max-width: 500px; max-height: 85vh; overflow-y: auto; box-sizing: border-box;
@@ -53,16 +59,16 @@
         }
         input[type=range]:focus { outline: none; }
         input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 20px; background: url('slider_track.png') center/100% 100% no-repeat; border: none; border-radius: 10px;
+            width: 100%; height: 20px; background: url('slider_track.PNG') center/100% 100% no-repeat; border: none; border-radius: 10px;
         }
         input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 40px; width: 40px; background: url('slider_thumb.png') center/contain no-repeat; margin-top: -10px; 
+            -webkit-appearance: none; height: 40px; width: 40px; background: url('slider_thumb.PNG') center/contain no-repeat; margin-top: -10px; 
         }
         input[type=range]::-moz-range-track {
-            width: 100%; height: 20px; background: url('slider_track.png') center/100% 100% no-repeat; border: none;
+            width: 100%; height: 20px; background: url('slider_track.PNG') center/100% 100% no-repeat; border: none;
         }
         input[type=range]::-moz-range-thumb {
-            height: 40px; width: 40px; background: url('slider_thumb.png') center/contain no-repeat; border: none;
+            height: 40px; width: 40px; background: url('slider_thumb.PNG') center/contain no-repeat; border: none;
         }
         
         .flex-row { display: flex; gap: 10px; align-items: center; justify-content: center; width: 100%; flex-direction: column;}
@@ -105,7 +111,7 @@
 
         #footer {
             position: fixed; bottom: 0; width: 100%; height: 45px;
-            background: #000000; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-sizing: border-box; z-index: 101; pointer-events: auto;
+            background: #000000; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-sizing: border-box; z-index: 101;
         }
         .footer-left { display: flex; gap: 15px; align-items: center; pointer-events: auto;}
         .social-icon { width: 25px; height: 25px; cursor: pointer; transition: transform 0.2s; pointer-events: auto;}
@@ -157,7 +163,7 @@
             <span class="score-num" id="s2">0</span>
         </div>
 
-        <img id="in-game-settings-btn" src="set_icon.png" onclick="playClickSound(); openSettings();" alt="">
+        <img id="in-game-settings-btn" src="set_icon.PNG" onclick="playClickSound(); openSettings();" alt="">
     </div>
     
     <div id="bottom-bar">
@@ -175,42 +181,42 @@
 
 <div id="settings-menu">
     <div class="settings-box">
-        <img id="img-set-title" src="set_title.png" alt="" style="width: 250px; height: auto; margin-bottom: 5px;">
+        <img id="img-set-title" src="set_title.PNG" alt="" style="width: 250px; height: auto; margin-bottom: 5px;">
         
         <div class="slider-container">
-            <img id="img-set-music" src="set_music.png" alt="" style="width: 160px; height: auto; margin: 0 auto 5px auto; display: block;">
+            <img id="img-set-music" src="set_music.PNG" alt="" style="width: 160px; height: auto; margin: 0 auto 5px auto; display: block;">
             <div class="flex-row">
                 <input type="range" id="bgm-slider" min="0" max="1" step="0.05" value="0.4" oninput="updateBGM(this.value)">
             </div>
         </div>
         
         <div class="slider-container">
-            <img id="img-set-sfx" src="set_sfx.png" alt="" style="width: 160px; height: auto; margin: 0 auto 5px auto; display: block;">
+            <img id="img-set-sfx" src="set_sfx.PNG" alt="" style="width: 160px; height: auto; margin: 0 auto 5px auto; display: block;">
             <div class="flex-row">
                 <input type="range" id="sfx-slider" min="0" max="1" step="0.05" value="1.0" oninput="updateSFX(this.value)">
             </div>
         </div>
 
         <div style="display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 15px;">
-            <img id="img-set-resume" src="set_resume.png" class="img-btn" style="width: 220px;" onclick="playClickSound(); closeSettings();" alt="">
-            <img id="img-set-restart" src="set_restart.png" class="img-btn" style="width: 220px;" onclick="playClickSound(); restartGame();" alt="">
-            <img id="img-set-exit" src="set_exit.png" class="img-btn" style="width: 220px;" onclick="playClickSound(); exitGame();" alt="">
+            <img id="img-set-resume" src="set_resume.PNG" class="img-btn" style="width: 220px;" onclick="playClickSound(); closeSettings();" alt="">
+            <img id="img-set-restart" src="set_restart.PNG" class="img-btn" style="width: 220px;" onclick="playClickSound(); restartGame();" alt="">
+            <img id="img-set-exit" src="set_exit.PNG" class="img-btn" style="width: 220px;" onclick="playClickSound(); exitGame();" alt="">
         </div>
     </div>
 </div>
 
 <div id="launcher">
     <div class="menu-buttons">
-        <img id="btn-pvp" src="btn1.png" class="img-btn" onclick="playClickSound(); startCinematicIntro('PVP');" alt="">
-        <img id="btn-online" src="btn2.png" class="img-btn" onclick="playClickSound(); alert('Online multiplayer coming soon!');" alt="">
-        <img id="btn-bot" src="btn3.png" class="img-btn" onclick="playClickSound(); startCinematicIntro('BOT');" alt="">
-        <img id="btn-settings" src="btn4.png" class="img-btn" onclick="playClickSound(); openSettings();" alt="">
+        <img id="btn-pvp" src="btn1.PNG" class="img-btn" onclick="playClickSound(); startCinematicIntro('PVP');" alt="">
+        <img id="btn-online" src="btn2.PNG" class="img-btn" onclick="playClickSound(); alert('Online multiplayer coming soon!');" alt="">
+        <img id="btn-bot" src="btn3.PNG" class="img-btn" onclick="playClickSound(); startCinematicIntro('BOT');" alt="">
+        <img id="btn-settings" src="btn4.PNG" class="img-btn" onclick="playClickSound(); openSettings();" alt="">
     </div>
 
     <div id="footer">
         <div class="footer-left">
-            <a href="https://t.me/aqy_31" target="_blank" style="pointer-events: auto;"><img id="logo-tele" src="tele.png" class="social-icon" alt=""></a>
-            <a href="https://www.instagram.com/aqy31_?igsh=MWx1eTFod3RnazRuYw%3D%3D&utm_source=qr" target="_blank" style="pointer-events: auto;"><img id="logo-insta" src="insta.png" class="social-icon" alt=""></a>
+            <a href="https://t.me/aqy_31" target="_blank"><img id="logo-tele" src="tele.png" class="social-icon" alt=""></a>
+            <a href="https://www.instagram.com/aqy31_?igsh=MWx1eTFod3RnazRuYw%3D%3D&utm_source=qr" target="_blank"><img id="logo-insta" src="insta.png" class="social-icon" alt=""></a>
         </div>
         <div class="footer-center">
             <img id="logo-center" src="logo.png" class="company-logo" alt="">
@@ -226,14 +232,50 @@
 </div>
 
 <script>
-// 🚨 جميع الامتدادات تم توحيدها لتكون بحروف صغيرة .png 🚨
+// 🚨 ربط التطبيق (PWA) للعمل بدون إنترنت 🚨
+const manifest = {
+    "name": "Royal Game of Ur",
+    "short_name": "Ur Game",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#050505",
+    "theme_color": "#050505",
+    "icons": [{"src": "logo.png","sizes": "192x192","type": "image/png"}]
+};
+const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+document.getElementById('manifest-link').href = URL.createObjectURL(manifestBlob);
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => console.log('SW fail', err));
+    });
+}
+
+// الروابط
+const DESIGN_ASSETS = {
+    boardTex: 'board.PNG',
+    boardSideTex: 'board_side.PNG', 
+    mainMenuBackground: 'wall.png',
+    roomWallTexture: 'wall.png',
+    mainTable: 'table.png',
+    tableSideTex: 'table_side.png', 
+    trayTexture: 'tray.PNG',
+    pieceBlue: 'blue.PNG',
+    pieceRed: 'red.PNG', 
+    diceTex: 'dice.png',
+    clayTabletTex: 'clay.png', 
+    bgMusic: 'music.mp3',
+    diceSound: 'dice.mp3', 
+    moveSound: 'move.mp3'  
+};
 
 document.getElementById('launcher').style.backgroundImage = `url('bg.png')`;
-document.getElementById('bg-music').src = 'music.mp3';
+document.getElementById('bg-music').src = DESIGN_ASSETS.bgMusic;
 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 const audioBuffers = {};
+
 let sfxVolume = 1.0;
 
 async function loadSFX(id, url) {
@@ -245,8 +287,8 @@ async function loadSFX(id, url) {
     } catch (err) {}
 }
 
-loadSFX('dice', 'dice.mp3');
-loadSFX('move', 'move.mp3');
+loadSFX('dice', DESIGN_ASSETS.diceSound);
+loadSFX('move', DESIGN_ASSETS.moveSound);
 loadSFX('click', 'click.mp3'); 
 
 function playSFX(id) {
@@ -282,18 +324,18 @@ function closeSettings() { document.getElementById('settings-menu').style.displa
 
 const textureLoader = new THREE.TextureLoader();
 
-// 🚨 تحميل خامات الـ 3D بحروف صغيرة 🚨
+// 🚨 تحميل خامات الـ 3D بحروف مطابقة لملفاتك 🚨
 const textures = {
-    boardTex: textureLoader.load('board.png'),
-    boardSide: textureLoader.load('board_side.png'), 
-    table: textureLoader.load('table.png'),
-    tableSide: textureLoader.load('table_side.png'), 
-    pieceBlue: textureLoader.load('blue.png'),
-    pieceRed: textureLoader.load('red.png'),
-    dice: textureLoader.load('dice.png'),
-    tray: textureLoader.load('tray.png'),
-    clay: textureLoader.load('clay.png'),
-    roomWall: textureLoader.load('wall.png')
+    boardTex: textureLoader.load(DESIGN_ASSETS.boardTex),
+    boardSide: textureLoader.load(DESIGN_ASSETS.boardSideTex), 
+    table: textureLoader.load(DESIGN_ASSETS.mainTable),
+    tableSide: textureLoader.load(DESIGN_ASSETS.tableSideTex), 
+    pieceBlue: textureLoader.load(DESIGN_ASSETS.pieceBlue),
+    pieceRed: textureLoader.load(DESIGN_ASSETS.pieceRed),
+    dice: textureLoader.load(DESIGN_ASSETS.diceTex),
+    tray: textureLoader.load(DESIGN_ASSETS.trayTexture),
+    clay: textureLoader.load(DESIGN_ASSETS.clayTabletTex),
+    roomWall: textureLoader.load(DESIGN_ASSETS.roomWallTexture)
 };
 
 const canvas = document.createElement('canvas');
@@ -312,8 +354,8 @@ const PATHS = {
 class Game3D {
     constructor(mode, isCinematic = false) {
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color('#3a2411'); 
-        this.scene.fog = new THREE.FogExp2('#3a2411', 0.015);
+        this.scene.background = new THREE.Color('#0a0a0a'); // لون خلفية مريح للعين
+        this.scene.fog = new THREE.FogExp2('#0a0a0a', 0.015);
         
         this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -380,24 +422,24 @@ class Game3D {
         }
         document.body.appendChild(this.renderer.domElement);
 
-        // 🚨 الإضاءة الأصلية الدافئة والمريحة للعين 🚨
-        const ambientLight = new THREE.AmbientLight(0xffecd4, 0.6); 
+        // 🚨 الإضاءة البيضاء الصافية المريحة للعين (تحل مشكلة اللون المحروق) 🚨
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); 
         this.scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffa050, 1.5); 
-        dirLight.position.set(15, 25, -15);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.0); 
+        dirLight.position.set(15, 30, -10);
         dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
         this.scene.add(dirLight);
 
-        const spotLight = new THREE.SpotLight(0xff8833, 0.8, 100);
-        spotLight.position.set(0, 10, 0);
+        const spotLight = new THREE.SpotLight(0xffffff, 0.5, 100);
+        spotLight.position.set(0, 15, 0);
         this.scene.add(spotLight);
     }
 
     createEnvironment() {
-        textures.table.wrapS = THREE.RepeatWrapping; textures.table.wrapT = THREE.RepeatWrapping;
-        textures.table.repeat.set(6, 6); 
-
+        // 🚨 الطاولة خامة واحدة بدون تقطيع مربعات 🚨
         const tableTopMat = new THREE.MeshStandardMaterial({ map: textures.table, color: 0xffffff, roughness: 0.9 });
         
         const table = new THREE.Mesh(new THREE.BoxGeometry(70, 2, 50), tableTopMat);
@@ -417,7 +459,7 @@ class Game3D {
 
         textures.roomWall.wrapS = THREE.RepeatWrapping; textures.roomWall.wrapT = THREE.RepeatWrapping;
         textures.roomWall.repeat.set(5, 5); 
-        const roomMat = new THREE.MeshStandardMaterial({ map: textures.roomWall, color: 0xc29b70, roughness: 1, side: THREE.BackSide });
+        const roomMat = new THREE.MeshStandardMaterial({ map: textures.roomWall, color: 0xddbb99, roughness: 1, side: THREE.BackSide });
         
         const room = new THREE.Mesh(new THREE.BoxGeometry(150, 80, 150), roomMat);
         room.position.y = 20;
@@ -435,7 +477,6 @@ class Game3D {
         const cx = CONFIG.cx;
         const cz = CONFIG.cz;
         
-        // 🚨 الخشبة مبنية كقطعة واحدة 🚨
         const shape = new THREE.Shape();
         shape.moveTo(-4 * cx, -1.5 * cz);
         shape.lineTo( 0 * cx, -1.5 * cz);
@@ -469,9 +510,7 @@ class Game3D {
             }
         }
 
-        textures.boardSide.wrapS = THREE.RepeatWrapping;
-        textures.boardSide.repeat.set(12, 1);
-
+        // 🚨 جوانب الخشبة تلتف كشريط واحد 🚨
         const topMat = new THREE.MeshStandardMaterial({ map: textures.boardTex, color: 0xffffff, roughness: 0.6 });
         const sideMat = new THREE.MeshStandardMaterial({ map: textures.boardSide, color: 0xffffff, roughness: 0.8 }); 
         
@@ -555,41 +594,7 @@ class Game3D {
     }
 
     createDecorations() {
-        const tabletMat = new THREE.MeshStandardMaterial({ map: textures.clay, color: 0xffffff, roughness: 0.8 });
-        
-        const w = 2.1, l = 2.7, r = 0.3; 
-        const shape = new THREE.Shape();
-        shape.moveTo(-w + r, -l);
-        shape.lineTo(w - r, -l);
-        shape.quadraticCurveTo(w, -l, w, -l + r);
-        shape.lineTo(w, l - r);
-        shape.quadraticCurveTo(w, l, w - r, l);
-        shape.lineTo(-w + r, l);
-        shape.quadraticCurveTo(-w, l, -w, l - r);
-        shape.lineTo(-w, -l + r);
-        shape.quadraticCurveTo(-w, -l, -w + r, -l);
-
-        const extrudeSettings = { depth: 0.1, bevelEnabled: true, bevelSegments: 4, steps: 1, bevelSize: 0.1, bevelThickness: 0.1 };
-        const tabletGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-
-        tabletGeo.computeBoundingBox();
-        const bbox = tabletGeo.boundingBox;
-        const uvAttribute = tabletGeo.attributes.uv;
-        for (let i = 0; i < uvAttribute.count; i++) {
-            const x = tabletGeo.attributes.position.getX(i);
-            const y = tabletGeo.attributes.position.getY(i);
-            const u = (x - bbox.min.x) / (bbox.max.x - bbox.min.x);
-            const v = (y - bbox.min.y) / (bbox.max.y - bbox.min.y);
-            uvAttribute.setXY(i, u, v);
-        }
-
-        tabletGeo.rotateX(Math.PI / 2); 
-
-        const tablet1 = new THREE.Mesh(tabletGeo, tabletMat);
-        tablet1.position.set(13, 0.4, -4); 
-        tablet1.rotation.y = -Math.PI / 6; 
-        tablet1.castShadow = true;
-        this.scene.add(tablet1);
+        // 🚨 تم حذف الرقيم الطيني بناءً على طلبك 🚨
     }
 
     createThickGuideLine() {
